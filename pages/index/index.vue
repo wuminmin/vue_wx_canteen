@@ -238,23 +238,23 @@
 		
 		<!-- 底部菜单栏 -->
 		<view class="action-section"  v-if="!hasLogin" >
-			<!-- <view class="checkbox">
-				<image 
-					:src="allChecked?'/static/selected.png':'/static/select.png'" 
-					mode="aspectFit"
-					@click="check('all')"
-				></image>
-				<view class="clear-btn" :class="{show: allChecked}" @click="clearCart">
-					清空
-				</view>
-			</view> -->
 			<view class="total-box">
-				<text class="price">您需要先登陆或者注册</text>
+				<text class="price">您需要先注册</text>
 				<text class="coupon">
-					才可浏览食堂的货物
+					才可以使用完整的功能
 				</text>
 			</view>
-			<button type="primary" class="no-border confirm-btn" @click="navToLogin">去登陆/注册</button>
+			<button type="primary" class="no-border confirm-btn" @click="navToLogin">去注册</button>
+		</view>
+		<!-- 底部菜单栏 -->
+		<view class="action-section"  v-if="!hasOrganization&&hasLogin" >
+			<view class="total-box">
+				<text class="price">您需要加入公司/组织</text>
+				<text class="coupon">
+					才可以使用完整的功能
+				</text>
+			</view>
+			<button type="primary" class="no-border confirm-btn" @click="navToJoinOrganization">加入公司/组织</button>
 		</view>
 	</view>
 </template>
@@ -271,7 +271,8 @@
 				swiperCurrent: 0,
 				swiperLength: 0,
 				carouselList: [],
-				goodsList: []
+				goodsList: [],
+				organization:{},
 			};
 		},
 
@@ -323,7 +324,7 @@
 						
 		},
 		computed:{
-			...mapState(['hasLogin'])
+			...mapState(['hasLogin','hasOrganization'])
 		},
 		methods: {
 			...mapMutations(['login']),
@@ -349,6 +350,11 @@
 			navToLogin(){
 				uni.navigateTo({
 					url: '/pages/public/login'
+				})
+			},
+			navToJoinOrganization(){
+				uni.navigateTo({
+					url: '/pages/public/joinOrganization'
 				})
 			},
 			onSeach(e){

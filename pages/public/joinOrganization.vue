@@ -7,7 +7,13 @@
 		<view class="wrapper">
 			<view class="left-top-sign">注册！</view>
 			<view class="welcome">
-				欢迎回来！
+				加入组织！
+			</view>
+			<view class="example-body">
+				<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
+				<!-- <view class="search-result">
+					<text class="search-result-text">当前输入为：{{ searchVal }}</text>
+				</view> -->
 			</view>
 			<view class="input-content">
 				<view class="input-item">
@@ -20,13 +26,12 @@
 					 password data-key="password" @input="inputChange" @confirm="toLogin" />
 				</view>
 			</view>
-			<button class="sms-btn" @click="send_sms" :disabled="send_sms_ing">发送验证码</button>
-			<button class="confirm-btn" @click="toLogin" :disabled="logining">注册</button>
+			<button class="confirm-btn" @click="toLogin" :disabled="logining">申请加入</button>
 		</view>
-		<!-- <view class="register-section">
-			还没有账号?
-			<text @click="toRegist">马上注册</text>
-		</view> -->
+		<view class="register-section">
+			还没有公司或者组织?
+			<button class=".sms-btn" @click="toLogin" :disabled="logining">马上创建一个！</button>
+		</view>
 	</view>
 </template>
 
@@ -34,14 +39,21 @@
 	import {
 		mapMutations
 	} from 'vuex';
-
+import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
+	import uniSection from '@/components/uni-section/uni-section.vue'
 	export default {
+		components: {
+			uniSearchBar,
+			uniSection
+		},
 		data() {
 			return {
+				searchVal: '',
 				mobile: '',
 				password: '',
 				logining: false,
 				send_sms_ing: false,
+				organization_name:'',
 			}
 		},
 		onLoad() {
@@ -49,6 +61,80 @@
 		},
 		methods: {
 			...mapMutations(['login']),
+			search(res) {
+				uni.showToast({
+					title: '搜索：' + res.value,
+					icon: 'none'
+				})
+				let self = this;
+				let sendData = {
+					'searchVal': res.value
+				}
+				uni.login({
+					success: function(res) {
+						if (res.code) {
+							uni.request({
+								url: self.$global_dict.wx_url + 'search_organization',
+								data: {
+									app_id: self.$global_dict.app_id,
+									code: res.code,
+									sendData: sendData,
+								},
+								header: {
+									'custom-header': 'hello' //自定义请求头信息
+								},
+								success: (res) => {
+									console.log(res);
+									if (res.data.status == 2) {
+										uni.showToast({
+											title: res.data.msg,
+											icon: 'fail',
+											mask: true,
+											duration: 2000
+										});
+									} else if (res.data.status == 1) {
+										uni.showToast({
+											title: res.data.msg,
+											icon: 'success',
+											mask: true,
+											duration: 2000
+										});
+									} else {
+										console.log(res);
+										uni.showToast({
+											title: res.data.msg,
+											icon: 'fail',
+											mask: true,
+											duration: 2000
+										});
+									}
+									setTimeout(() => {
+										self.send_sms_ing = false;
+									}, 15000);
+								},
+								fail: (err) => {
+									console.log('request fail', err);
+									uni.showModal({
+										content: err.errMsg,
+										showCancel: false
+									});
+								}
+							});
+						}
+					},
+				})
+							
+				
+			},
+			input(res) {
+				this.searchVal = res.value
+			},
+			cancel(res) {
+				uni.showToast({
+					title: '点击取消，输入值为：' + res.value,
+					icon: 'none'
+				})
+			},
 			send_sms(e) {
 				console.log(e);
 				let self = this;
@@ -111,6 +197,7 @@
 						}
 					},
 				})
+			
 			},
 			inputChange(e) {
 				const key = e.currentTarget.dataset.key;
@@ -374,4 +461,121 @@
 			margin-left: 10upx;
 		}
 	}
+	
+	
+	/* 头条小程序组件内不能引入字体 */
+	/* #ifdef MP-TOUTIAO */
+	@font-face {
+		font-family: uniicons;
+		font-weight: normal;
+		font-style: normal;
+		src: url('~@/static/uni.ttf') format('truetype');
+	}
+	
+	/* #endif */
+	
+	/* #ifndef APP-NVUE */
+	page {
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		background-color: #efeff4;
+		min-height: 100%;
+		height: auto;
+	}
+	
+	view {
+		font-size: 14px;
+		line-height: inherit;
+	}
+	
+	.example {
+		padding: 0 15px 15px;
+	}
+	
+	.example-info {
+		padding: 15px;
+		color: #3b4144;
+		background: #ffffff;
+	}
+	
+	.example-body {
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: center;
+		padding: 0;
+		font-size: 14px;
+		background-color: #ffffff;
+	}
+	
+	/* #endif */
+	.example {
+		padding: 0 15px;
+	}
+	
+	.example-info {
+		/* #ifndef APP-NVUE */
+		display: block;
+		/* #endif */
+		padding: 15px;
+		color: #3b4144;
+		background-color: #ffffff;
+		font-size: 14px;
+		line-height: 20px;
+	}
+	
+	.example-info-text {
+		font-size: 14px;
+		line-height: 20px;
+		color: #3b4144;
+	}
+	
+	
+	.example-body {
+		flex-direction: column;
+		padding: 15px;
+		background-color: #ffffff;
+	}
+	
+	.word-btn-white {
+		font-size: 18px;
+		color: #FFFFFF;
+	}
+	
+	.word-btn {
+		/* #ifndef APP-NVUE */
+		display: flex;
+		/* #endif */
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		border-radius: 6px;
+		height: 48px;
+		margin: 15px;
+		background-color: #007AFF;
+	}
+	
+	.word-btn--hover {
+		background-color: #4ca2ff;
+	}
+	
+	
+	.search-result {
+		margin-top: 10px;
+		margin-bottom: 20px;
+		text-align: center;
+	}
+	
+	.search-result-text {
+		text-align: center;
+		font-size: 14px;
+	}
+	
+	.example-body {
+		/* #ifndef APP-NVUE */
+		display: block;
+		/* #endif */
+		padding: 0px;
+	}
+	
 </style>

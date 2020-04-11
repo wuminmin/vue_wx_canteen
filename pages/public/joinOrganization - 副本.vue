@@ -1,35 +1,93 @@
 <template>
-	<view class="container" >
-		<view class="left-bottom-sign"></view>
+	<view class="container">
 		<view class="back-btn yticon icon-zuojiantou-up" @click="navBack"></view>
-		<view class="right-top-sign"></view>
-		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
-		<view class="wrapper">
-			<!-- <view class="left-top-sign">注册！</view>
-			<view class="welcome">
-				加入组织！
-			</view> -->
-			<text >根据组织名称或统一社会信用代码查询！</text>
-			<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
-			<!-- <view class="example-body"> -->
-				<!-- <view class="search-result">
-					<text class="search-result-text">当前输入为：{{ searchVal }}</text>
-				</view> -->
-			<!-- </view> -->
-			<!-- </view> -->
-			<block v-for="(item, index) in organization_list" :key="item.id">
-			<uni-list>
-				<uni-list-item :show-arrow="false" >{{item.d.organization_name}}</uni-list-item>
-				<uni-list-item  :show-arrow="false" >统一代码：{{item.d.certificate_for_Uniform_Social_Credit_Code}}</uni-list-item>
-				<uni-list-item  :show-arrow="false" >地址：{{item.d.organization_address}}</uni-list-item>
-				<button class="confirm-btn"  v-bind:data="item" @click="toJoin(data, index)" :disabled="toJoinIng">申请加入</button>
-			</uni-list>
-			</block>
+		<!-- 空白页 -->
+		<view v-if="!hasLogin || empty===true" class="empty">
+			<image src="/static/emptyCart.jpg" mode="aspectFit"></image>
+			<view v-if="hasLogin" class="empty-tips">
+				空空如也
+				<navigator class="navigator" v-if="hasLogin" url="../index/index" open-type="switchTab">回到首页></navigator>
+			</view>
+			<view v-else class="empty-tips">
+				还没登陆
+				<view class="navigator" @click="navToLogin">去登陆></view>
+			</view>
 		</view>
-		
-		<view class="register-section">
-			还没有公司或者组织?
-			<button class=".sms-btn" @click="toCreate" >马上创建一个！</button>
+		<view v-else>
+			
+			<!-- 列表 -->
+			<view class="cart-list">
+				
+				<text class="welcome">根据组织名称或统一代码查询！</text>
+				<uni-search-bar  @confirm="search" @input="input" @cancel="cancel" />
+				<block v-for="(item, index) in organization_list" :key="item.id">
+				<uni-list>
+					<uni-list-item :show-arrow="false" >{{item.d.organization_name}}</uni-list-item>
+					<uni-list-item  :show-arrow="false" >统一代码：{{item.d.certificate_for_Uniform_Social_Credit_Code}}</uni-list-item>
+					<uni-list-item  :show-arrow="false" >地址：{{item.d.organization_address}}</uni-list-item>
+					<button class="confirm-btn"  v-bind:data="item" @click="toJoin(data, index)" :disabled="toJoinIng">申请加入</button>
+				</uni-list>
+				</block>
+				
+				<!-- <block v-for="(item, index) in cartList" :key="item.id">
+					<view
+						class="cart-item" 
+						:class="{'b-b': index!==cartList.length-1}"
+					>
+						<view class="image-wrapper">
+							<image :src="item.image" 
+								:class="[item.loaded]"
+								mode="aspectFill" 
+								lazy-load 
+								@load="onImageLoad('cartList', index)" 
+								@error="onImageError('cartList', index)"
+							></image>
+							<view 
+								class="yticon icon-xuanzhong2 checkbox"
+								:class="{checked: item.checked}"
+								@click="check('item', index)"
+							></view>
+						</view>
+						<view class="item-right">
+							<text class="clamp title">{{item.title}}</text>
+							<text class="attr">{{item.attr_val}}</text>
+							<text class="price">¥{{item.price}}</text>
+							<uni-number-box 
+								class="step"
+								:min="1" 
+								:max="item.stock"
+								:value="item.number>item.stock?item.stock:item.number"
+								:isMax="item.number>=item.stock?true:false"
+								:isMin="item.number===1"
+								:index="index"
+								@eventChange="numberChange"
+							></uni-number-box>
+						</view>
+						<text class="del-btn yticon icon-fork" @click="deleteCartItem(index)"></text>
+					</view>
+				</block>
+			 -->
+			</view>
+			<!-- 底部菜单栏 -->
+			<view class="action-section">
+				<!-- <view class="checkbox">
+					<image 
+						:src="allChecked?'/static/selected.png':'/static/select.png'" 
+						mode="aspectFit"
+						@click="check('all')"
+					></image>
+					<view class="clear-btn" :class="{show: allChecked}" @click="clearCart">
+						清空
+					</view>
+				</view> -->
+				<view class="total-box">
+					<text class="price">¥{{total}}</text>
+					<text class="coupon">
+						还没有公司或者组织?
+					</text>
+				</view>
+				<button type="primary" class="no-border confirm-btn" @click="toCreate">马上创建一个！</button>
+			</view>
 		</view>
 	</view>
 </template>
@@ -53,6 +111,10 @@
 		},
 		data() {
 			return {
+				total: 0, //总价格
+				allChecked: false, //全选状态  true|false
+				empty: false, //空白页现实  true|false
+				cartList: [],
 				searchVal: '',
 				mobile: '',
 				password: '',
@@ -60,11 +122,22 @@
 				send_sms_ing: false,
 				organization_name:'',
 				organization_list:[],
+			};
+		},
+		onLoad(){
+			// this.loadData();
+		},
+		watch:{
+			//显示空白页
+			cartList(e){
+				let empty = e.length === 0 ? true: false;
+				if(this.empty !== empty){
+					this.empty = empty;
+				}
 			}
 		},
-		onLoad() {
-		},
 		computed:{
+			// ...mapState(['hasLogin'])
 			...mapState(['hasLogin','hasOrganization','userInfo'])
 		},
 		methods: {
@@ -191,7 +264,7 @@
 									setTimeout(() => {
 										self.send_sms_ing = false;
 									}, 15000);
-
+			
 								},
 								fail: (err) => {
 									console.log('request fail', err);
@@ -282,32 +355,115 @@
 						}
 					},
 				})
+			},
+			//请求数据
+			async loadData(){
+				let list = await this.$api.json('cartList'); 
+				let cartList = list.map(item=>{
+					item.checked = true;
+					return item;
+				});
+				this.cartList = cartList;
+				this.calcTotal();  //计算总价
+			},
+			//监听image加载完成
+			onImageLoad(key, index) {
+				this.$set(this[key][index], 'loaded', 'loaded');
+			},
+			//监听image加载失败
+			onImageError(key, index) {
+				this[key][index].image = '/static/errorImage.jpg';
+			},
+			navToLogin(){
+				uni.navigateTo({
+					url: '/pages/public/login'
+				})
+			},
+			 //选中状态处理
+			check(type, index){
+				if(type === 'item'){
+					this.cartList[index].checked = !this.cartList[index].checked;
+				}else{
+					const checked = !this.allChecked
+					const list = this.cartList;
+					list.forEach(item=>{
+						item.checked = checked;
+					})
+					this.allChecked = checked;
+				}
+				this.calcTotal(type);
+			},
+			//数量
+			numberChange(data){
+				this.cartList[data.index].number = data.number;
+				this.calcTotal();
+			},
+			//删除
+			deleteCartItem(index){
+				let list = this.cartList;
+				let row = list[index];
+				let id = row.id;
+
+				this.cartList.splice(index, 1);
+				this.calcTotal();
+				uni.hideLoading();
+			},
+			//清空
+			clearCart(){
+				uni.showModal({
+					content: '清空购物车？',
+					success: (e)=>{
+						if(e.confirm){
+							this.cartList = [];
+						}
+					}
+				})
+			},
+			//计算总价
+			calcTotal(){
+				let list = this.cartList;
+				if(list.length === 0){
+					this.empty = true;
+					return;
+				}
+				let total = 0;
+				let checked = true;
+				list.forEach(item=>{
+					if(item.checked === true){
+						total += item.price * item.number;
+					}else if(checked === true){
+						checked = false;
+					}
+				})
+				this.allChecked = checked;
+				this.total = Number(total.toFixed(2));
+			},
+			//创建订单
+			createOrder(){
+				let list = this.cartList;
+				let goodsData = [];
+				list.forEach(item=>{
+					if(item.checked){
+						goodsData.push({
+							attr_val: item.attr_val,
+							number: item.number
+						})
+					}
+				})
+
+				uni.navigateTo({
+					url: `/pages/order/createOrder?data=${JSON.stringify({
+						goodsData: goodsData
+					})}`
+				})
+				this.$api.msg('跳转下一页 sendData');
 			}
-		},
+		}
 	}
 </script>
 
 <style lang='scss'>
-	page {
-		background: #fff;
-	}
-
-	.container {
-		padding-top: 60px;
-		/* position: relative; */
-		width: 100%;
-		height: 100%;
-		/* overflow: hidden; */
-		background: #fff;
-	}
-
-	.wrapper {
-		position: relative;
-		z-index: 90;
-		background: #fff;
-		padding-bottom: 40upx;
-	}
-
+	
 	.back-btn {
 		position: absolute;
 		left: 40upx;
@@ -317,66 +473,25 @@
 		font-size: 40upx;
 		color: $font-color-dark;
 	}
-
-	.left-top-sign {
-		font-size: 120upx;
-		color: $page-color-base;
-		position: relative;
-		left: -16upx;
-	}
-
-	.right-top-sign {
-		position: absolute;
-		top: 80upx;
-		right: -30upx;
-		z-index: 95;
-
-		&:before,
-		&:after {
-			display: block;
-			content: "";
-			width: 400upx;
-			height: 80upx;
-			background: #b4f3e2;
-		}
-
-		&:before {
-			transform: rotate(50deg);
-			border-radius: 0 50px 0 0;
-		}
-
-		&:after {
-			position: absolute;
-			right: -198upx;
-			top: 0;
-			transform: rotate(-50deg);
-			border-radius: 50px 0 0 0;
-			/* background: pink; */
-		}
-	}
-
-	.left-bottom-sign {
-		position: absolute;
-		left: -270upx;
-		bottom: -320upx;
-		border: 100upx solid #d0d1fd;
-		border-radius: 50%;
-		padding: 180upx;
-	}
-
+	
 	.welcome {
 		position: relative;
 		left: 50upx;
 		top: 90upx;
-		font-size: 46upx;
+		font-size: $font-sm+2upx;
 		color: #555;
 		text-shadow: 1px 0px 1px rgba(0, 0, 0, .3);
 	}
-
-	.input-content {
-		padding: 0 60upx;
+	
+	.welcome {
+		position: relative;
+		left: 50upx;
+		top: 140upx;
+		font-size: $font-sm+2upx;
+		color: #555;
+		text-shadow: 1px 0px 1px rgba(0, 0, 0, .3);
 	}
-
+	
 	.input-item {
 		display: flex;
 		flex-direction: column;
@@ -387,18 +502,18 @@
 		height: 120upx;
 		border-radius: 4px;
 		margin-bottom: 50upx;
-
+	
 		&:last-child {
 			margin-bottom: 0;
 		}
-
+	
 		.tit {
 			height: 50upx;
 			line-height: 56upx;
 			font-size: $font-sm+2upx;
 			color: $font-color-base;
 		}
-
+	
 		input {
 			height: 60upx;
 			font-size: $font-base + 2upx;
@@ -406,207 +521,17 @@
 			width: 100%;
 		}
 	}
-
-	.confirm-btn {
-		width: 630upx;
-		height: 76upx;
-		line-height: 76upx;
-		border-radius: 50px;
-		margin-top: 70upx;
-		background: $uni-color-primary;
-		color: #fff;
-		font-size: $font-lg;
-
-		&:after {
-			border-radius: 100px;
-		}
-	}
-
-	.sms-btn {
-		width: 630upx;
-		height: 76upx;
-		line-height: 76upx;
-		border-radius: 50px;
-		margin-top: 70upx;
-		background: $uni-color-success;
-		color: #fff;
-		font-size: $font-lg;
-
-		&:after {
-			border-radius: 100px;
-		}
-	}
-
-	.forget-section {
-		font-size: $font-sm+2upx;
-		color: $font-color-spec;
-		text-align: center;
-		margin-top: 40upx;
-	}
-
-	.register-section {
-		position: absolute;
-		left: 0;
-		bottom: 50upx;
-		width: 100%;
-		font-size: $font-sm+2upx;
-		color: $font-color-base;
-		text-align: center;
-
-		text {
-			color: $font-color-spec;
-			margin-left: 10upx;
-		}
+	
+	.container {
+		padding-top: 115px;
+		position: relative;
+		width: 100vw;
+		height: 100vh;
+		overflow: hidden;
+		background: #fff;
 	}
 	
 	
-	/* 头条小程序组件内不能引入字体 */
-	/* #ifdef MP-TOUTIAO */
-	@font-face {
-		font-family: uniicons;
-		font-weight: normal;
-		font-style: normal;
-		src: url('~@/static/uni.ttf') format('truetype');
-	}
-	
-	/* #endif */
-	
-	/* #ifndef APP-NVUE */
-	page {
-		display: flex;
-		flex-direction: column;
-		box-sizing: border-box;
-		background-color: #efeff4;
-		min-height: 100%;
-		height: auto;
-	}
-	
-	view {
-		font-size: 14px;
-		line-height: inherit;
-	}
-	
-	.example {
-		padding: 0 15px 15px;
-	}
-	
-	.example-info {
-		padding: 15px;
-		color: #3b4144;
-		background: #ffffff;
-	}
-	
-	.example-body {
-		flex-direction: row;
-		flex-wrap: wrap;
-		justify-content: center;
-		padding: 0;
-		font-size: 14px;
-		background-color: #ffffff;
-	}
-	
-	/* #endif */
-	.example {
-		padding: 0 15px;
-	}
-	
-	.example-info {
-		/* #ifndef APP-NVUE */
-		display: block;
-		/* #endif */
-		padding: 15px;
-		color: #3b4144;
-		background-color: #ffffff;
-		font-size: 14px;
-		line-height: 20px;
-	}
-	
-	.example-info-text {
-		font-size: 14px;
-		line-height: 20px;
-		color: #3b4144;
-	}
-	
-	
-	.example-body {
-		flex-direction: column;
-		padding: 15px;
-		background-color: #ffffff;
-	}
-	
-	.word-btn-white {
-		font-size: 18px;
-		color: #FFFFFF;
-	}
-	
-	.word-btn {
-		/* #ifndef APP-NVUE */
-		display: flex;
-		/* #endif */
-		flex-direction: row;
-		align-items: center;
-		justify-content: center;
-		border-radius: 6px;
-		height: 48px;
-		margin: 15px;
-		background-color: #007AFF;
-	}
-	
-	.word-btn--hover {
-		background-color: #4ca2ff;
-	}
-	
-	
-	.search-result {
-		margin-top: 10px;
-		margin-bottom: 20px;
-		text-align: center;
-	}
-	
-	.search-result-text {
-		text-align: center;
-		font-size: 14px;
-	}
-	
-	.example-body {
-		/* #ifndef APP-NVUE */
-		display: block;
-		/* #endif */
-		padding: 0px;
-	}
-	
-	
-	.container{
-		padding-bottom: 134upx;
-		/* 空白页 */
-		.empty{
-			position:fixed;
-			left: 0;
-			top:0;
-			width: 100%;
-			height: 100vh;
-			padding-bottom:100upx;
-			display:flex;
-			justify-content: center;
-			flex-direction: column;
-			align-items:center;
-			background: #fff;
-			image{
-				width: 240upx;
-				height: 160upx;
-				margin-bottom:30upx;
-			}
-			.empty-tips{
-				display:flex;
-				font-size: $font-sm+2upx;
-				color: $font-color-disabled;
-				.navigator{
-					color: $uni-color-primary;
-					margin-left: 16upx;
-				}
-			}
-		}
-	}
 	/* 购物车列表项 */
 	.cart-item{
 		display:flex;
@@ -664,10 +589,85 @@
 			color: $font-color-light;
 		}
 	}
+	/* 底部栏 */
+	.action-section{
+		/* #ifdef H5 */
+		margin-bottom:100upx;
+		/* #endif */
+		position:fixed;
+		left: 30upx;
+		bottom:30upx;
+		z-index: 95;
+		display: flex;
+		align-items: center;
+		width: 690upx;
+		height: 100upx;
+		padding: 0 30upx;
+		background: rgba(255,255,255,.9);
+		box-shadow: 0 0 20upx 0 rgba(0,0,0,.5);
+		border-radius: 16upx;
+		.checkbox{
+			height:52upx;
+			position:relative;
+			image{
+				width: 52upx;
+				height: 100%;
+				position:relative;
+				z-index: 5;
+			}
+		}
+		.clear-btn{
+			position:absolute;
+			left: 26upx;
+			top: 0;
+			z-index: 4;
+			width: 0;
+			height: 52upx;
+			line-height: 52upx;
+			padding-left: 38upx;
+			font-size: $font-base;
+			color: #fff;
+			background: $font-color-disabled;
+			border-radius:0 50px 50px 0;
+			opacity: 0;
+			transition: .2s;
+			&.show{
+				opacity: 1;
+				width: 120upx;
+			}
+		}
+		.total-box{
+			flex: 1;
+			display:flex;
+			flex-direction: column;
+			text-align:right;
+			padding-right: 40upx;
+			.price{
+				font-size: $font-lg;
+				color: $font-color-dark;
+			}
+			.coupon{
+				font-size: $font-sm;
+				color: $font-color-light;
+				text{
+					color: $font-color-dark;
+				}
+			}
+		}
+		.confirm-btn{
+			padding: 0 38upx;
+			margin: 0;
+			border-radius: 100px;
+			height: 76upx;
+			line-height: 76upx;
+			font-size: $font-base + 2upx;
+			background: $uni-color-primary;
+			box-shadow: 1px 2px 5px rgba(217, 60, 93, 0.72)
+		}
+	}
 	/* 复选框选中状态 */
 	.action-section .checkbox.checked,
 	.cart-item .checkbox.checked{
 		color: $uni-color-primary;
 	}
-	
 </style>

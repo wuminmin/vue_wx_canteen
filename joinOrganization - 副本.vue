@@ -1,15 +1,15 @@
 <template>
-	<view class="container" >
-		<view class="left-bottom-sign"></view>
+	<view class="container">
+		<!-- <view class="left-bottom-sign"></view> -->
 		<view class="back-btn yticon icon-zuojiantou-up" @click="navBack"></view>
-		<view class="right-top-sign"></view>
+		<!-- <view class="right-top-sign"></view> -->
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
-			<!-- <view class="left-top-sign">注册！</view>
+			<view class="left-top-sign">注册！</view>
 			<view class="welcome">
 				加入组织！
-			</view> -->
-			<text >根据组织名称或统一社会信用代码查询！</text>
+			</view>
+			<text class="tit">根据组织名称或统一社会信用代码查询！</text>
 			<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
 			<!-- <view class="example-body"> -->
 				<!-- <view class="search-result">
@@ -293,11 +293,11 @@
 	}
 
 	.container {
-		padding-top: 60px;
-		/* position: relative; */
-		width: 100%;
-		height: 100%;
-		/* overflow: hidden; */
+		padding-top: 115px;
+		position: relative;
+		width: 100vw;
+		height: 100vh;
+		overflow: hidden;
 		background: #fff;
 	}
 
@@ -367,7 +367,7 @@
 	.welcome {
 		position: relative;
 		left: 50upx;
-		top: 90upx;
+		top: -90upx;
 		font-size: 46upx;
 		color: #555;
 		text-shadow: 1px 0px 1px rgba(0, 0, 0, .3);

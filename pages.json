@@ -5,7 +5,7 @@
 			"path": "pages/index/index",
 			"style": {
 				// #ifdef MP 
-				"navigationBarTitleText": "Dloud商城",
+				"navigationBarTitleText": "食堂联盟",
 				//"navigationStyle": "custom",
 				// #endif 
 				"app-plus": {

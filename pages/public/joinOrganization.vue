@@ -1,42 +1,34 @@
 <template>
-	<view class="container" >
+	<view class="container">
 		<view class="left-bottom-sign"></view>
 		<view class="back-btn yticon icon-zuojiantou-up" @click="navBack"></view>
 		<view class="right-top-sign"></view>
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
-			<!-- <view class="left-top-sign">注册！</view>
 			<view class="welcome">
-				加入组织！
-			</view> -->
-			<text >根据组织名称或统一社会信用代码查询！</text>
+				根据组织名称或统代码查询！
+			</view>
 			<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
-			<!-- <view class="example-body"> -->
-				<!-- <view class="search-result">
-					<text class="search-result-text">当前输入为：{{ searchVal }}</text>
-				</view> -->
-			<!-- </view> -->
-			<!-- </view> -->
-			<block v-for="(item, index) in organization_list" :key="item.id">
-			<uni-list>
-				<uni-list-item :show-arrow="false" >{{item.d.organization_name}}</uni-list-item>
-				<uni-list-item  :show-arrow="false" >统一代码：{{item.d.certificate_for_Uniform_Social_Credit_Code}}</uni-list-item>
-				<uni-list-item  :show-arrow="false" >地址：{{item.d.organization_address}}</uni-list-item>
-				<button class="confirm-btn"  v-bind:data="item" @click="toJoin(data, index)" :disabled="toJoinIng">申请加入</button>
-			</uni-list>
+			<block v-for="(item, index) in organization_list" :key="index">
+				<uni-list>
+					<uni-list-item :show-arrow="false">{{item.d.organization_name}}</uni-list-item>
+					<uni-list-item :show-arrow="false">统一代码：{{item.d.certificate_for_Uniform_Social_Credit_Code}}</uni-list-item>
+					<uni-list-item :show-arrow="false">地址：{{item.d.organization_address}}</uni-list-item>
+					<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">申请加入</button>
+				</uni-list>
 			</block>
 		</view>
-		
 		<view class="register-section">
 			还没有公司或者组织?
-			<button class=".sms-btn" @click="toCreate" >马上创建一个！</button>
+			<button class=".sms-btn" @click="toCreate">马上创建一个！</button>
 		</view>
 	</view>
 </template>
 
 <script>
 	import {
-		mapState,mapMutations
+		mapState,
+		mapMutations
 	} from 'vuex';
 	import uniList from '@/components/uni-list/uni-list.vue'
 	import uniListItem from '@/components/uni-list-item/uni-list-item.vue'
@@ -58,21 +50,24 @@
 				password: '',
 				toJoinIng: false,
 				send_sms_ing: false,
-				organization_name:'',
-				organization_list:[],
+				organization_name: '',
+				organization_list: [],
 			}
 		},
-		onLoad() {
-		},
-		computed:{
-			...mapState(['hasLogin','hasOrganization','userInfo'])
+		onLoad() {},
+		computed: {
+			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
 		},
 		methods: {
-			...mapMutations(['login']),
-			toJoin(key, index){
-				console.log(key, index)
+			...mapMutations(['login', 'joinOrganization']),
+			toJoin:function (item) {
+				console.log(item)
+				this.joinOrganization(item);
+				uni.navigateTo({
+					url: '/pages/public/joinDepartment'
+				})
 			},
-			toCreate(e){
+			toCreate(e) {
 				console.log(e)
 			},
 			search(res) {
@@ -131,7 +126,7 @@
 						});
 					}
 				});
-				
+
 			},
 			input(res) {
 				this.searchVal = res.value
@@ -142,70 +137,7 @@
 					icon: 'none'
 				})
 			},
-			send_sms(e) {
-				console.log(e);
-				let self = this;
-				let sendData = {
-					'mobile': self.mobile
-				}
-				uni.login({
-					success: function(res) {
-						if (res.code) {
-							console.log(res)
-							self.send_sms_ing = true;
-							uni.request({
-								url: self.$global_dict.wx_url + 'wx_send_sms',
-								data: {
-									app_id: self.$global_dict.app_id,
-									code: res.code,
-									sendData: sendData,
-								},
-								header: {
-									'custom-header': 'hello' //自定义请求头信息
-								},
-								success: (res) => {
-									console.log(res);
-									if (res.data.status == 2) {
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'fail',
-											mask: true,
-											duration: 2000
-										});
-									} else if (res.data.status == 1) {
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'success',
-											mask: true,
-											duration: 2000
-										});
-									} else {
-										console.log(res);
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'fail',
-											mask: true,
-											duration: 2000
-										});
-									}
-									setTimeout(() => {
-										self.send_sms_ing = false;
-									}, 15000);
 
-								},
-								fail: (err) => {
-									console.log('request fail', err);
-									uni.showModal({
-										content: err.errMsg,
-										showCancel: false
-									});
-								}
-							});
-						}
-					},
-				})
-			
-			},
 			inputChange(e) {
 				const key = e.currentTarget.dataset.key;
 				this[key] = e.detail.value;
@@ -367,8 +299,7 @@
 	.welcome {
 		position: relative;
 		left: 50upx;
-		top: 90upx;
-		font-size: 46upx;
+		font-size: $font-sm+2upx;
 		color: #555;
 		text-shadow: 1px 0px 1px rgba(0, 0, 0, .3);
 	}
@@ -458,8 +389,8 @@
 			margin-left: 10upx;
 		}
 	}
-	
-	
+
+
 	/* 头条小程序组件内不能引入字体 */
 	/* #ifdef MP-TOUTIAO */
 	@font-face {
@@ -468,9 +399,9 @@
 		font-style: normal;
 		src: url('~@/static/uni.ttf') format('truetype');
 	}
-	
+
 	/* #endif */
-	
+
 	/* #ifndef APP-NVUE */
 	page {
 		display: flex;
@@ -480,22 +411,22 @@
 		min-height: 100%;
 		height: auto;
 	}
-	
+
 	view {
 		font-size: 14px;
 		line-height: inherit;
 	}
-	
+
 	.example {
 		padding: 0 15px 15px;
 	}
-	
+
 	.example-info {
 		padding: 15px;
 		color: #3b4144;
 		background: #ffffff;
 	}
-	
+
 	.example-body {
 		flex-direction: row;
 		flex-wrap: wrap;
@@ -504,12 +435,12 @@
 		font-size: 14px;
 		background-color: #ffffff;
 	}
-	
+
 	/* #endif */
 	.example {
 		padding: 0 15px;
 	}
-	
+
 	.example-info {
 		/* #ifndef APP-NVUE */
 		display: block;
@@ -520,25 +451,25 @@
 		font-size: 14px;
 		line-height: 20px;
 	}
-	
+
 	.example-info-text {
 		font-size: 14px;
 		line-height: 20px;
 		color: #3b4144;
 	}
-	
-	
+
+
 	.example-body {
 		flex-direction: column;
 		padding: 15px;
 		background-color: #ffffff;
 	}
-	
+
 	.word-btn-white {
 		font-size: 18px;
 		color: #FFFFFF;
 	}
-	
+
 	.word-btn {
 		/* #ifndef APP-NVUE */
 		display: flex;
@@ -551,123 +482,137 @@
 		margin: 15px;
 		background-color: #007AFF;
 	}
-	
+
 	.word-btn--hover {
 		background-color: #4ca2ff;
 	}
-	
-	
+
+
 	.search-result {
 		margin-top: 10px;
 		margin-bottom: 20px;
 		text-align: center;
 	}
-	
+
 	.search-result-text {
 		text-align: center;
 		font-size: 14px;
 	}
-	
+
 	.example-body {
 		/* #ifndef APP-NVUE */
 		display: block;
 		/* #endif */
 		padding: 0px;
 	}
-	
-	
-	.container{
+
+
+	.container {
 		padding-bottom: 134upx;
+
 		/* 空白页 */
-		.empty{
-			position:fixed;
+		.empty {
+			position: fixed;
 			left: 0;
-			top:0;
+			top: 0;
 			width: 100%;
 			height: 100vh;
-			padding-bottom:100upx;
-			display:flex;
+			padding-bottom: 100upx;
+			display: flex;
 			justify-content: center;
 			flex-direction: column;
-			align-items:center;
+			align-items: center;
 			background: #fff;
-			image{
+
+			image {
 				width: 240upx;
 				height: 160upx;
-				margin-bottom:30upx;
+				margin-bottom: 30upx;
 			}
-			.empty-tips{
-				display:flex;
+
+			.empty-tips {
+				display: flex;
 				font-size: $font-sm+2upx;
 				color: $font-color-disabled;
-				.navigator{
+
+				.navigator {
 					color: $uni-color-primary;
 					margin-left: 16upx;
 				}
 			}
 		}
 	}
+
 	/* 购物车列表项 */
-	.cart-item{
-		display:flex;
-		position:relative;
-		padding:30upx 40upx;
-		.image-wrapper{
+	.cart-item {
+		display: flex;
+		position: relative;
+		padding: 30upx 40upx;
+
+		.image-wrapper {
 			width: 230upx;
 			height: 230upx;
 			flex-shrink: 0;
-			position:relative;
-			image{
-				border-radius:8upx;
+			position: relative;
+
+			image {
+				border-radius: 8upx;
 			}
 		}
-		.checkbox{
-			position:absolute;
-			left:-16upx;
+
+		.checkbox {
+			position: absolute;
+			left: -16upx;
 			top: -16upx;
 			z-index: 8;
 			font-size: 44upx;
 			line-height: 1;
 			padding: 4upx;
 			color: $font-color-disabled;
-			background:#fff;
+			background: #fff;
 			border-radius: 50px;
 		}
-		.item-right{
-			display:flex;
+
+		.item-right {
+			display: flex;
 			flex-direction: column;
 			flex: 1;
 			overflow: hidden;
-			position:relative;
+			position: relative;
 			padding-left: 30upx;
-			.title,.price{
-				font-size:$font-base + 2upx;
+
+			.title,
+			.price {
+				font-size: $font-base + 2upx;
 				color: $font-color-dark;
 				height: 40upx;
 				line-height: 40upx;
 			}
-			.attr{
+
+			.attr {
 				font-size: $font-sm + 2upx;
 				color: $font-color-light;
 				height: 50upx;
 				line-height: 50upx;
 			}
-			.price{
+
+			.price {
 				height: 50upx;
-				line-height:50upx;
+				line-height: 50upx;
 			}
 		}
-		.del-btn{
-			padding:4upx 10upx;
-			font-size:34upx; 
+
+		.del-btn {
+			padding: 4upx 10upx;
+			font-size: 34upx;
 			height: 50upx;
 			color: $font-color-light;
 		}
 	}
+
 	/* 复选框选中状态 */
 	.action-section .checkbox.checked,
-	.cart-item .checkbox.checked{
+	.cart-item .checkbox.checked {
 		color: $uni-color-primary;
 	}
-	
 </style>

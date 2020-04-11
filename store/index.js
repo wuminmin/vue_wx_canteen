@@ -8,10 +8,10 @@ const store = new Vuex.Store({
 		hasLogin: false,
 		hasOrganization:false,
 		userInfo: {},
+		organizationInfo:{},
 	},
 	mutations: {
 		login(state, provider) {
-
 			state.hasLogin = true;
 			state.userInfo = provider;
 			uni.setStorage({//缓存用户登陆状态
@@ -20,6 +20,16 @@ const store = new Vuex.Store({
 			}) 
 			console.log(state.userInfo,'------------store-mutations-login');
 		},
+		joinOrganization(state,provider){
+			state.hasOrganization = true;
+			state.organizationInfo = provider;
+			uni.setStorage({
+			    key: 'organizationInfo',  
+			    data: provider  
+			}) 
+			console.log(state.organizationInfo,'------------store-mutations-joinOrganization');
+		},
+		
 		logout(state) {
 			state.hasLogin = false;
 			state.userInfo = {};

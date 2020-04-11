@@ -9,40 +9,44 @@
 			<view class="welcome">
 				加入组织！
 			</view>
-			<view class="example-body">
-				<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
+			<text class="tit">根据组织名称或统一社会信用代码查询！</text>
+			<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
+			<!-- <view class="example-body"> -->
 				<!-- <view class="search-result">
 					<text class="search-result-text">当前输入为：{{ searchVal }}</text>
 				</view> -->
-			</view>
-			<view class="input-content">
-				<view class="input-item">
-					<text class="tit">手机号码</text>
-					<input type="number" :value="mobile" placeholder="请输入手机号码" maxlength="11" data-key="mobile" @input="inputChange" />
-				</view>
-				<view class="input-item">
-					<text class="tit">短信验证码</text>
-					<input type="mobile" value="" placeholder="8-18位不含特殊字符的数字、字母组合" placeholder-class="input-empty" maxlength="20"
-					 password data-key="password" @input="inputChange" @confirm="toLogin" />
-				</view>
-			</view>
-			<button class="confirm-btn" @click="toLogin" :disabled="logining">申请加入</button>
+			<!-- </view> -->
+			<block v-for="(item, index) in organization_list" :key="item.id">
+			<uni-list>
+				<uni-list-item :show-arrow="false" >{{item.d.organization_name}}</uni-list-item>
+				<uni-list-item  :show-arrow="false" >统一代码：{{item.d.certificate_for_Uniform_Social_Credit_Code}}</uni-list-item>
+				<uni-list-item  :show-arrow="false" >地址：{{item.d.organization_address}}</uni-list-item>
+				<button class="confirm-btn" @click="toJoin(item.d, index)" :disabled="toJoinIng">申请加入</button>
+			</uni-list>
+			</block>
 		</view>
+		
 		<view class="register-section">
 			还没有公司或者组织?
-			<button class=".sms-btn" @click="toLogin" :disabled="logining">马上创建一个！</button>
+			<button class=".sms-btn" @click="toCreate" >马上创建一个！</button>
 		</view>
 	</view>
 </template>
 
 <script>
 	import {
-		mapMutations
+		mapState,mapMutations
 	} from 'vuex';
-import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
+	import uniList from '@/components/uni-list/uni-list.vue'
+	import uniListItem from '@/components/uni-list-item/uni-list-item.vue'
+	import uniNumberBox from '@/components/uni-number-box.vue'
+	import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
 	import uniSection from '@/components/uni-section/uni-section.vue'
 	export default {
 		components: {
+			uniList,
+			uniListItem,
+			uniNumberBox,
 			uniSearchBar,
 			uniSection
 		},
@@ -51,16 +55,25 @@ import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
 				searchVal: '',
 				mobile: '',
 				password: '',
-				logining: false,
+				toJoinIng: false,
 				send_sms_ing: false,
 				organization_name:'',
+				organization_list:[],
 			}
 		},
 		onLoad() {
-
+		},
+		computed:{
+			...mapState(['hasLogin','hasOrganization','userInfo'])
 		},
 		methods: {
 			...mapMutations(['login']),
+			toJoin(key, index){
+				console.log(key, index)
+			},
+			toCreate(e){
+				console.log(e)
+			},
 			search(res) {
 				uni.showToast({
 					title: '搜索：' + res.value,
@@ -70,60 +83,53 @@ import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
 				let sendData = {
 					'searchVal': res.value
 				}
-				uni.login({
-					success: function(res) {
-						if (res.code) {
-							uni.request({
-								url: self.$global_dict.wx_url + 'search_organization',
-								data: {
-									app_id: self.$global_dict.app_id,
-									code: res.code,
-									sendData: sendData,
-								},
-								header: {
-									'custom-header': 'hello' //自定义请求头信息
-								},
-								success: (res) => {
-									console.log(res);
-									if (res.data.status == 2) {
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'fail',
-											mask: true,
-											duration: 2000
-										});
-									} else if (res.data.status == 1) {
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'success',
-											mask: true,
-											duration: 2000
-										});
-									} else {
-										console.log(res);
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'fail',
-											mask: true,
-											duration: 2000
-										});
-									}
-									setTimeout(() => {
-										self.send_sms_ing = false;
-									}, 15000);
-								},
-								fail: (err) => {
-									console.log('request fail', err);
-									uni.showModal({
-										content: err.errMsg,
-										showCancel: false
-									});
-								}
+				uni.request({
+					url: self.$global_dict.wx_url + 'search_organization',
+					data: {
+						token: self.$store.state.userInfo.token,
+						sendData: sendData,
+					},
+					header: {
+						'custom-header': 'hello' //自定义请求头信息
+					},
+					success: (res) => {
+						console.log(res);
+						if (res.data.status == 2) {
+							uni.showToast({
+								title: res.data.msg,
+								icon: 'fail',
+								mask: true,
+								duration: 2000
+							});
+						} else if (res.data.status == 1) {
+							self.organization_list = res.data.data.organization_list
+							uni.showToast({
+								title: res.data.msg,
+								icon: 'success',
+								mask: true,
+								duration: 2000
+							});
+						} else {
+							console.log(res);
+							uni.showToast({
+								title: res.data.msg,
+								icon: 'fail',
+								mask: true,
+								duration: 2000
 							});
 						}
+						setTimeout(() => {
+							self.send_sms_ing = false;
+						}, 15000);
 					},
-				})
-							
+					fail: (err) => {
+						console.log('request fail', err);
+						uni.showModal({
+							content: err.errMsg,
+							showCancel: false
+						});
+					}
+				});
 				
 			},
 			input(res) {
@@ -576,6 +582,101 @@ import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
 		display: block;
 		/* #endif */
 		padding: 0px;
+	}
+	
+	
+	.container{
+		padding-bottom: 134upx;
+		/* 空白页 */
+		.empty{
+			position:fixed;
+			left: 0;
+			top:0;
+			width: 100%;
+			height: 100vh;
+			padding-bottom:100upx;
+			display:flex;
+			justify-content: center;
+			flex-direction: column;
+			align-items:center;
+			background: #fff;
+			image{
+				width: 240upx;
+				height: 160upx;
+				margin-bottom:30upx;
+			}
+			.empty-tips{
+				display:flex;
+				font-size: $font-sm+2upx;
+				color: $font-color-disabled;
+				.navigator{
+					color: $uni-color-primary;
+					margin-left: 16upx;
+				}
+			}
+		}
+	}
+	/* 购物车列表项 */
+	.cart-item{
+		display:flex;
+		position:relative;
+		padding:30upx 40upx;
+		.image-wrapper{
+			width: 230upx;
+			height: 230upx;
+			flex-shrink: 0;
+			position:relative;
+			image{
+				border-radius:8upx;
+			}
+		}
+		.checkbox{
+			position:absolute;
+			left:-16upx;
+			top: -16upx;
+			z-index: 8;
+			font-size: 44upx;
+			line-height: 1;
+			padding: 4upx;
+			color: $font-color-disabled;
+			background:#fff;
+			border-radius: 50px;
+		}
+		.item-right{
+			display:flex;
+			flex-direction: column;
+			flex: 1;
+			overflow: hidden;
+			position:relative;
+			padding-left: 30upx;
+			.title,.price{
+				font-size:$font-base + 2upx;
+				color: $font-color-dark;
+				height: 40upx;
+				line-height: 40upx;
+			}
+			.attr{
+				font-size: $font-sm + 2upx;
+				color: $font-color-light;
+				height: 50upx;
+				line-height: 50upx;
+			}
+			.price{
+				height: 50upx;
+				line-height:50upx;
+			}
+		}
+		.del-btn{
+			padding:4upx 10upx;
+			font-size:34upx; 
+			height: 50upx;
+			color: $font-color-light;
+		}
+	}
+	/* 复选框选中状态 */
+	.action-section .checkbox.checked,
+	.cart-item .checkbox.checked{
+		color: $uni-color-primary;
 	}
 	
 </style>

@@ -40,6 +40,39 @@ const prePage = ()=>{
 	return prePage.$vm;
 }
 
+const myUniRequest = (myUrl,token,sendData) =>{
+	let self = this;
+	uni.request({
+		url:self.$global_dict.wx_url+myUrl,
+		data:{
+			token : token ,
+			sendData : sendData
+		},
+		success:function(res){
+			console.log(res)
+			if(res.status == 1){
+				uni.showToast({
+					title: res.data.msg,
+					icon: 'success',
+					mask: true,
+					duration: 3000
+				});
+			}else{
+				uni.showToast({
+					title: res.data.msg,
+					icon: 'none',
+					mask: true,
+					duration: 3000
+				});
+			}
+			return res.data
+		},
+		fail: (err) => {
+			console.log(err)
+			return err
+		}
+	})
+}
 
 Vue.config.productionTip = false
 Vue.prototype.$global_dict = {
@@ -48,7 +81,7 @@ Vue.prototype.$global_dict = {
 }
 Vue.prototype.$fire = new Vue();
 Vue.prototype.$store = store;
-Vue.prototype.$api = {msg, json, prePage};
+Vue.prototype.$api = {msg, json, prePage ,myUniRequest};
 
 App.mpType = 'app'
 

@@ -1,8 +1,8 @@
 <template>
 	<view class="container">
 		<view class="left-bottom-sign"></view>
+		<!-- <view class="right-top-sign"></view> -->
 		<view class="back-btn yticon icon-zuojiantou-up" @click="navBack"></view>
-		<view class="right-top-sign"></view>
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
 			<view class="welcome">
@@ -12,7 +12,7 @@
 			<block v-for="(item, index) in organization_list" :key="index">
 				<uni-list>
 					<uni-list-item :show-arrow="false">{{item.d.organization_name}}</uni-list-item>
-					<uni-list-item :show-arrow="false">统一代码：{{item.d.certificate_for_Uniform_Social_Credit_Code}}</uni-list-item>
+					<uni-list-item :show-arrow="false">统一代码：{{item.d.certificate_for_uniform_social_credit_code}}</uni-list-item>
 					<uni-list-item :show-arrow="false">地址：{{item.d.organization_address}}</uni-list-item>
 					<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">申请加入</button>
 				</uni-list>
@@ -26,10 +26,7 @@
 </template>
 
 <script>
-	import {
-		mapState,
-		mapMutations
-	} from 'vuex';
+	import { mapState,mapMutations } from 'vuex';
 	import uniList from '@/components/uni-list/uni-list.vue'
 	import uniListItem from '@/components/uni-list-item/uni-list-item.vue'
 	import uniNumberBox from '@/components/uni-number-box.vue'
@@ -67,8 +64,10 @@
 					url: '/pages/public/joinDepartment'
 				})
 			},
-			toCreate(e) {
-				console.log(e)
+			toCreate() {
+				uni.navigateTo({
+					url: '/pages/public/createOrganization'
+				})
 			},
 			search(res) {
 				uni.showToast({
@@ -80,7 +79,7 @@
 					'searchVal': res.value
 				}
 				uni.request({
-					url: self.$global_dict.wx_url + 'search_organization',
+					url: self.$global_dict.wx_url + 'wx_search_organization',
 					data: {
 						token: self.$store.state.userInfo.token,
 						sendData: sendData,

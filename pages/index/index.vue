@@ -27,13 +27,13 @@
 		</view>
 		<!-- 分类 -->
 		<view class="cate-section">
-			<view class="cate-item">
-				<image src="/static/temp/c3.png"></image>
+			<view class="cate-item" >
+				<image @click="navToOrganization" src="/static/temp/c3.png"></image>
 				<text>我的单位</text>
 			</view>
 			<view class="cate-item">
-				<image src="/static/temp/c5.png"></image>
-				<text>我的钱包</text>
+				<image  @click="navToLogin2" src="/static/temp/c5.png"></image>
+				<text>供应商</text>
 			</view>
 			<view class="cate-item">
 				<image src="/static/temp/c6.png"></image>
@@ -304,7 +304,8 @@
 										duration: duration
 									});
 								}else if(res.data.status == 1){
-									self.login(res.data.data);
+									self.login(res.data.data.userInfo);
+									self.getOrganization(res.data.data.organizationInfo);
 									self.loadData();
 								}
 								self.loading = false;
@@ -327,11 +328,12 @@
 			...mapState(['hasLogin','hasOrganization'])
 		},
 		methods: {
-			...mapMutations(['login']),
+			...mapMutations(['login','getOrganization']),
 			/**
 			 * 请求静态数据只是为了代码不那么乱
 			 * 分次请求未作整合
 			 */
+			
 			async loadStaticData() {
 				let carouselList = await this.$api.json('carouselList');
 				this.titleNViewBackground = carouselList[0].background;
@@ -350,6 +352,16 @@
 			navToLogin(){
 				uni.navigateTo({
 					url: '/pages/public/login'
+				})
+			},
+			navToOrganization(){
+				uni.navigateTo({
+					url: '/pages/organization/organization'
+				})
+			},
+			navToSupplier(){
+				uni.navigateTo({
+					url: '/pages/supplier/supplier'
 				})
 			},
 			navToJoinOrganization(){

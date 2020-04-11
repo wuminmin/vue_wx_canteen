@@ -20,6 +20,15 @@ const store = new Vuex.Store({
 			}) 
 			console.log(state.userInfo,'------------store-mutations-login');
 		},
+		getOrganization(state,provider){
+			state.hasOrganization = provider.hasOrganization;
+			state.organizationInfo = provider;
+			uni.setStorage({//缓存用户登陆状态
+			    key: 'organizationInfo',  
+			    data: provider  
+			}) 
+			console.log(state.organizationInfo,'------------store-mutations-organizationInfo');
+		},
 		joinOrganization(state,provider){
 			state.hasOrganization = true;
 			state.organizationInfo = provider;

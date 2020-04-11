@@ -5,7 +5,7 @@
 			"path": "pages/index/index",
 			"style": {
 				// #ifdef MP 
-				"navigationBarTitleText": "食堂联盟",
+				"navigationBarTitleText": "吃盟",
 				//"navigationStyle": "custom",
 				// #endif 
 				"app-plus": {
@@ -91,6 +91,17 @@
 		}, 
 		{
 			"path": "pages/public/joinDepartment",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false,
+					"animationType": "slide-in-bottom"
+				}
+			}
+		}, 
+		{
+			"path": "pages/public/createOrganization",
 			"style": {
 				"navigationBarTitleText": "",
 				"navigationStyle": "custom",
@@ -200,7 +211,25 @@
 				"enablePullDownRefresh": true,
 				"navigationBarTitleText": "商品列表"
 			}
-        }
+        },
+		{
+			"path":"pages/organization/organization",
+			"style":{
+				"navigationBarTitleText": "我的单位",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path":"pages/supplier/supplier",
+			"style":{
+				"navigationBarTitleText": "供应商",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		}
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

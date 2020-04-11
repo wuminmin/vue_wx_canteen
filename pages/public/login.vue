@@ -11,6 +11,10 @@
 			</view>
 			<view class="input-content">
 				<view class="input-item">
+					<text class="tit">昵称</text>
+					<input v-model="nickname" />
+				</view>
+				<view class="input-item">
 					<text class="tit">手机号码</text>
 					<input type="number" :value="mobile" placeholder="请输入手机号码" maxlength="11" data-key="mobile" @input="inputChange" />
 				</view>
@@ -42,6 +46,7 @@
 				password: '',
 				logining: false,
 				send_sms_ing: false,
+				nickname:'',
 			}
 		},
 		onLoad() {
@@ -125,6 +130,7 @@
 			async toLogin() {
 				this.logining = true;
 				const {
+					nickname,
 					mobile,
 					password
 				} = this;
@@ -138,6 +144,7 @@
 				}
 				*/
 				const sendData = {
+					nickname,
 					mobile,
 					password
 				};

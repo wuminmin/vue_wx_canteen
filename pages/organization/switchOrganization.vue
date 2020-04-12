@@ -2,7 +2,6 @@
 	<view class="container">
 		<view class="left-bottom-sign"></view>
 		<!-- <view class="right-top-sign"></view> -->
-		<view class="back-btn yticon icon-zuojiantou-up" @click="navBack"></view>
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
 			<view class="welcome">
@@ -14,13 +13,9 @@
 					<uni-list-item :show-arrow="false">{{item.d.organization_name}}</uni-list-item>
 					<uni-list-item :show-arrow="false">统一代码：{{item.d.certificate_for_uniform_social_credit_code}}</uni-list-item>
 					<uni-list-item :show-arrow="false">地址：{{item.d.organization_address}}</uni-list-item>
-					<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">申请加入</button>
+					<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">切换单位</button>
 				</uni-list>
 			</block>
-		</view>
-		<view class="register-section">
-			还没有公司或者组织?
-			<button class=".sms-btn" @click="toCreate">马上创建一个！</button>
 		</view>
 	</view>
 </template>
@@ -32,6 +27,7 @@
 	import uniNumberBox from '@/components/uni-number-box.vue'
 	import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
 	import uniSection from '@/components/uni-section/uni-section.vue'
+	import myRequest from '@/myTool.js'
 	export default {
 		components: {
 			uniList,
@@ -54,10 +50,18 @@
 		onLoad() {
 			let myUrl = 'wx_get_organizationInfo_list'
 			let token = this.userInfo.token
-			let sendData = {active_organization:this.userInfo.active_organization}
-			let res = this.$api.myUniRequest(myUrl,token,sendData)
-			console.log(res)
-			organization_list = res.data.organization_list
+			let sendData = {searchVal:''}
+			myRequest({
+				url:myUrl,data:{token:token,sendData:sendData}
+			}).then(res => {
+				console.log(res,'--------------myRequest res')
+				if(res.data.status == 1){
+					this.organization_list = res.data.data.organization_list
+					this.$api.msg_success(res.msg)
+				}else{
+					this.$api.msg_fail(res.msg)
+				}
+	        })
 		},
 		computed: {
 			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
@@ -67,14 +71,19 @@
 			
 			toJoin:function (item) {
 				console.log(item)
-				// this.joinOrganization(item);
-				uni.navigateTo({
-					url: '/pages/public/joinDepartment'
-				})
-			},
-			toCreate() {
-				uni.navigateTo({
-					url: '/pages/public/createOrganization'
+				let myUrl = 'wx_swicth_organization'
+				let token = this.userInfo.token
+				let sendData = {organizationInfo:item}
+				myRequest({
+					url:myUrl,data:{token:token,sendData:sendData}
+				}).then(res => {
+					console.log(res,'--------------myRequest res')
+					if(res.data.status == 1){
+						this.login(res.data.data.userInfo)
+						uni.navigateBack();
+					}else{
+						this.$api.msg_fail(res.msg)
+					}
 				})
 			},
 			search(res) {
@@ -87,7 +96,7 @@
 					'searchVal': res.value
 				}
 				uni.request({
-					url: self.$global_dict.wx_url + 'wx_search_organization',
+					url: self.$global_dict.wx_url + 'wx_get_organizationInfo_list',
 					data: {
 						token: self.$store.state.userInfo.token,
 						sendData: sendData,

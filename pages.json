@@ -222,6 +222,15 @@
 			}
 		},
 		{
+			"path":"pages/organization/switchOrganization",
+			"style":{
+				"navigationBarTitleText": "切换单位",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
 			"path":"pages/supplier/supplier",
 			"style":{
 				"navigationBarTitleText": "供应商",

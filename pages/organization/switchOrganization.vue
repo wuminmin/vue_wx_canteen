@@ -51,12 +51,20 @@
 				organization_list: [],
 			}
 		},
-		onLoad() {},
+		onLoad() {
+			let myUrl = 'wx_get_organizationInfo_list'
+			let token = this.userInfo.token
+			let sendData = {active_organization:this.userInfo.active_organization}
+			let res = this.$api.myUniRequest(myUrl,token,sendData)
+			console.log(res)
+			organization_list = res.data.organization_list
+		},
 		computed: {
 			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
 		},
 		methods: {
 			...mapMutations(['login', 'joinOrganization']),
+			
 			toJoin:function (item) {
 				console.log(item)
 				// this.joinOrganization(item);

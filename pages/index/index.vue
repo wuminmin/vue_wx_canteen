@@ -260,9 +260,7 @@
 </template>
 
 <script>
-	import {
-		mapState,mapMutations
-	} from 'vuex';
+	import {mapState,mapMutations} from 'vuex';
 	const duration = 2000
 	export default {
 		data() {
@@ -324,8 +322,8 @@
 			})
 						
 		},
-		computed:{
-			...mapState(['hasLogin','hasOrganization'])
+		computed: {
+			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
 		},
 		methods: {
 			...mapMutations(['login','getOrganization']),

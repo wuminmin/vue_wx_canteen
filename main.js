@@ -43,7 +43,7 @@ const prePage = ()=>{
 const myUniRequest = (myUrl,token,sendData) =>{
 	let self = this;
 	uni.request({
-		url:self.$global_dict.wx_url+myUrl,
+		url:'https://wx.wuminmin.top/canteen_alliance/'+myUrl,
 		data:{
 			token : token ,
 			sendData : sendData

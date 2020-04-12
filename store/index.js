@@ -14,6 +14,11 @@ const store = new Vuex.Store({
 		login(state, provider) {
 			state.hasLogin = true;
 			state.userInfo = provider;
+			if(provider.active_organization == ''){
+				state.hasOrganization = false
+			}else{
+				state.hasOrganization = true
+			}
 			uni.setStorage({//缓存用户登陆状态
 			    key: 'userInfo',  
 			    data: provider  

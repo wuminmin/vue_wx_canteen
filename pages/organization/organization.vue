@@ -1,650 +1,400 @@
-<template>
-	<view class="content">
-		<view class="navbar">
-			<view 
-				v-for="(item, index) in navList" :key="index" 
-				class="nav-item" 
-				:class="{current: tabCurrentIndex === index}"
-				@click="tabClick(index)"
-			>
-				{{item.text}}
-			</view>
-		</view>
-		<swiper :current="tabCurrentIndex" class="swiper-box" duration="300" @change="changeTab">
-			<swiper-item class="tab-content" v-for="(tabItem,tabIndex) in navList" :key="tabIndex">
-				<scroll-view 
-					class="list-scroll-content" 
-					scroll-y
-					@scrolltolower="loadData"
-				>
-					<!-- 空白页 -->
-					<empty v-if="tabItem.loaded === true && tabItem.orderList.length === 0"></empty>
-					
-					<!-- 订单列表 -->
-					<view 
-						v-for="(item,index) in tabItem.orderList" :key="index"
-						class="order-item"
-					>
-						<view class="i-top b-b">
-							<text class="time">{{item.time}}</text>
-							<text class="state" :style="{color: item.stateTipColor}">{{item.stateTip}}</text>
-							<text 
-								v-if="item.state===9" 
-								class="del-btn yticon icon-iconfontshanchu1"
-								@click="deleteOrder(index)"
-							></text>
-						</view>
-						
-						<scroll-view v-if="item.goodsList.length > 1" class="goods-box" scroll-x>
-							<view
-								v-for="(goodsItem, goodsIndex) in item.goodsList" :key="goodsIndex"
-								class="goods-item"
-							>
-								<image class="goods-img" :src="goodsItem.image" mode="aspectFill"></image>
-							</view>
-						</scroll-view>
-						<view 
-							v-if="item.goodsList.length === 1" 
-							class="goods-box-single"
-							v-for="(goodsItem, goodsIndex) in item.goodsList" :key="goodsIndex"
-						>
-							<image class="goods-img" :src="goodsItem.image" mode="aspectFill"></image>
-							<view class="right">
-								<text class="title clamp">{{goodsItem.title}}</text>
-								<text class="attr-box">{{goodsItem.attr}}  x {{goodsItem.number}}</text>
-								<text class="price">{{goodsItem.price}}</text>
-							</view>
-						</view>
-						
-						<view class="price-box">
-							共
-							<text class="num">7</text>
-							件商品 实付款
-							<text class="price">143.7</text>
-						</view>
-						<view class="action-box b-t" v-if="item.state != 9">
-							<button class="action-btn" @click="cancelOrder(item)">取消订单</button>
-							<button class="action-btn recom">立即支付</button>
-						</view>
-					</view>
-					 
-					<uni-load-more :status="tabItem.loadingType"></uni-load-more>
-					
-				</scroll-view>
-			</swiper-item>
-		</swiper>
-		<!-- 底部菜单栏 -->
-		<view class="action-section"  >
-			<view class="total-box">
-				当前单位名称
-			</view>
-		</view>
-	</view>
-</template> 
-
-<script>
-	import { mapState,mapMutations } from 'vuex';
-	import uniLoadMore from '@/components/uni-load-more/uni-load-more.vue';
-	import empty from "@/components/empty";
-	import Json from '@/Json';
-	export default {
-		components: {
-			uniLoadMore,
-			empty
-		},
-		data() {
-			return {
-				tabCurrentIndex: 0,
-				navList: [{
-						state: 0,
-						text: '我的单位',
-						loadingType: 'more',
-						orderList: []
-					},
-					{
-						state: 1,
-						text: '授权管理',
-						loadingType: 'more',
-						orderList: []
-					},
-					{
-						state: 2,
-						text: '代办事项',
-						loadingType: 'more',
-						orderList: []
-					}
-				],
-			};
-		},
+<template>  
+    <view class="container">  
 		
-		onLoad(options){
-			/**
-			 * 修复app端点击除全部订单外的按钮进入时不加载数据的问题
-			 * 替换onLoad下代码即可
-			 */
-			this.tabCurrentIndex = +options.state;
-			// #ifndef MP
-			this.loadData()
-			// #endif
-			// #ifdef MP
-			if(options.state == 0){
-				this.loadData()
-			}
-			// #endif
+		<view class="user-section">
+			<image class="bg" src="/static/user-bg.jpg"></image>
+			<view class="user-info-box">
+				<view class="portrait-box">
+					<image class="portrait" :src="userInfo.portrait || '/static/missing-face.png'"></image>
+				</view>
+				<view class="info-box">
+					<text class="username">{{userInfo.nickname || '游客'}}</text>
+				</view>
+			</view>
+			<view class="vip-card-box">
+				<!-- <text class="card-bg"> {{userInfo.active_organization}}</text> -->
+				<!-- <image class="card-bg" src="/static/vip-card-bg.png" mode=""></image> -->
+				<view class="b-btn" @click="switchOrganization">
+					切换单位
+				</view>
+				<view class="tit">
+					<text class="yticon icon-iLinkapp-"></text>
+					 {{userInfo.active_organization}}
+				</view>
+				<text class="e-m">DCloud Union</text>
+				<text class="e-b">开通会员开发无bug 一测就上线</text>
+			</view>
+		</view>
+		
+		<view 
+			class="cover-container"
+			:style="[{
+				transform: coverTransform,
+				transition: coverTransition
+			}]"
+			@touchstart="coverTouchstart"
+			@touchmove="coverTouchmove"
+			@touchend="coverTouchend"
+		>
+			<image class="arc" src="/static/arc.png"></image>
 			
-		},
-		computed: {
-			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
-		},
-		 
-		methods: {
-			...mapMutations(['login', 'joinOrganization']),
-			//获取订单列表
-			loadData(source){
-				//这里是将订单挂载到tab列表下
-				let index = this.tabCurrentIndex;
-				let navItem = this.navList[index];
-				let state = navItem.state;
-				
-				if(source === 'tabChange' && navItem.loaded === true){
-					//tab切换只有第一次需要加载数据
-					return;
-				}
-				if(navItem.loadingType === 'loading'){
-					//防止重复加载
-					return;
-				}
-				
-				navItem.loadingType = 'loading';
-				
-				setTimeout(()=>{
-					// myUniRequest('getOrganization')
-					let organizationInfoList = self.$store.state.organizationInfo.organizationInfoList
-					let orderList = organizationInfoList.filter(item=>{
-						//添加不同状态下订单的表现形式
-						// item = Object.assign(item, this.orderStateExp(item.state));
-						//演示数据所以自己进行状态筛选
-						// if(state === 0){
-						// 	//0为全部订单
-						// 	return item;
-						// }
-						// return item.state === state
-					});
-					organizationInfoList.forEach(item=>{
-						navItem.orderList.push(item);
-					})
-					//loaded新字段用于表示数据加载完毕，如果为空可以显示空白页
-					this.$set(navItem, 'loaded', true);
-					
-					//判断是否还有数据， 有改为 more， 没有改为noMore 
-					navItem.loadingType = 'more';
-				}, 600);	
-			}, 
-
-			//swiper 切换
-			changeTab(e){
-				this.tabCurrentIndex = e.target.current;
-				this.loadData('tabChange');
-			},
-			//顶部tab点击
-			tabClick(index){
-				this.tabCurrentIndex = index;
-			},
-			//删除订单
-			deleteOrder(index){
-				uni.showLoading({
-					title: '请稍后'
-				})
-				setTimeout(()=>{
-					this.navList[this.tabCurrentIndex].orderList.splice(index, 1);
-					uni.hideLoading();
-				}, 600)
-			},
-			//取消订单
-			cancelOrder(item){
-				uni.showLoading({
-					title: '请稍后'
-				})
-				setTimeout(()=>{
-					let {stateTip, stateTipColor} = this.orderStateExp(9);
-					item = Object.assign(item, {
-						state: 9,
-						stateTip, 
-						stateTipColor
-					})
-					
-					//取消订单后删除待付款中该项
-					let list = this.navList[1].orderList;
-					let index = list.findIndex(val=>val.id === item.id);
-					index !== -1 && list.splice(index, 1);
-					
-					uni.hideLoading();
-				}, 600)
-			},
-
-			//订单状态文字和颜色
-			orderStateExp(state){
-				let stateTip = '',
-					stateTipColor = '#fa436a';
-				switch(+state){
-					case 1:
-						stateTip = '待付款'; break;
-					case 2:
-						stateTip = '待发货'; break;
-					case 9:
-						stateTip = '订单已关闭'; 
-						stateTipColor = '#909399';
-						break;
-						
-					//更多自定义
-				}
-				return {stateTip, stateTipColor};
-			}
-		},
-	}
-</script>
-
-<style lang="scss">
-	/* 底部栏 */
-	.action-section{
-		/* #ifdef H5 */
-		margin-bottom:100upx;
-		/* #endif */
-		position:fixed;
-		left: 30upx;
-		bottom:30upx;
-		z-index: 95;
-		display: flex;
-		align-items: center;
-		width: 690upx;
-		height: 100upx;
-		padding: 0 30upx;
-		background: rgba(255,255,255,.9);
-		box-shadow: 0 0 20upx 0 rgba(0,0,0,.5);
-		border-radius: 16upx;
-		.checkbox{
-			height:52upx;
-			position:relative;
-			image{
-				width: 52upx;
-				height: 100%;
-				position:relative;
-				z-index: 5;
-			}
-		}
-		.clear-btn{
-			position:absolute;
-			left: 26upx;
-			top: 0;
-			z-index: 4;
-			width: 0;
-			height: 52upx;
-			line-height: 52upx;
-			padding-left: 38upx;
-			font-size: $font-base;
-			color: #fff;
-			background: $font-color-disabled;
-			border-radius:0 50px 50px 0;
-			opacity: 0;
-			transition: .2s;
-			&.show{
-				opacity: 1;
-				width: 120upx;
-			}
-		}
-		.total-box{
-			flex: 1;
-			display:flex;
-			flex-direction: column;
-			text-align:right;
-			padding-right: 40upx;
-			.price{
-				font-size: $font-lg;
-				color: $font-color-dark;
-			}
-			.coupon{
-				font-size: $font-sm;
-				color: $font-color-light;
-				text{
-					color: $font-color-dark;
-				}
-			}
-		}
-		.confirm-btn{
-			padding: 0 38upx;
-			margin: 0;
-			border-radius: 100px;
-			height: 76upx;
-			line-height: 76upx;
-			font-size: $font-base + 2upx;
-			background: $uni-color-primary;
-			box-shadow: 1px 2px 5px rgba(217, 60, 93, 0.72)
-		}
-	}
-	
-	page, .content{
-		background: $page-color-base;
-		height: 100%;
-	}
-	
-	.swiper-box{
-		height: calc(100% - 40px);
-	}
-	.list-scroll-content{
-		height: 100%;
-	}
-	
-	.navbar{
-		display: flex;
-		height: 40px;
-		padding: 0 5px;
-		background: #fff;
-		box-shadow: 0 1px 5px rgba(0,0,0,.06);
-		position: relative;
-		z-index: 10;
-		.nav-item{
-			flex: 1;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			height: 100%;
-			font-size: 15px;
-			color: $font-color-dark;
-			position: relative;
-			&.current{
-				color: $base-color;
-				&:after{
-					content: '';
-					position: absolute;
-					left: 50%;
-					bottom: 0;
-					transform: translateX(-50%);
-					width: 44px;
-					height: 0;
-					border-bottom: 2px solid $base-color;
-				}
-			}
-		}
-	}
-
-	.uni-swiper-item{
-		height: auto;
-	}
-	.order-item{
-		display: flex;
-		flex-direction: column;
-		padding-left: 30upx;
-		background: #fff;
-		margin-top: 16upx;
-		.i-top{
-			display: flex;
-			align-items: center;
-			height: 80upx;
-			padding-right:30upx;
-			font-size: $font-base;
-			color: $font-color-dark;
-			position: relative;
-			.time{
-				flex: 1;
-			}
-			.state{
-				color: $base-color;
-			}
-			.del-btn{
-				padding: 10upx 0 10upx 36upx;
-				font-size: $font-lg;
-				color: $font-color-light;
-				position: relative;
-				&:after{
-					content: '';
-					width: 0;
-					height: 30upx;
-					border-left: 1px solid $border-color-dark;
-					position: absolute;
-					left: 20upx;
-					top: 50%;
-					transform: translateY(-50%);
-				}
-			}
-		}
-		/* 多条商品 */
-		.goods-box{
-			height: 160upx;
-			padding: 20upx 0;
-			white-space: nowrap;
-			.goods-item{
-				width: 120upx;
-				height: 120upx;
-				display: inline-block;
-				margin-right: 24upx;
-			}
-			.goods-img{
-				display: block;
-				width: 100%;
-				height: 100%;
-			}
-		}
-		/* 单条商品 */
-		.goods-box-single{
-			display: flex;
-			padding: 20upx 0;
-			.goods-img{
-				display: block;
-				width: 120upx;
-				height: 120upx;
-			}
-			.right{
-				flex: 1;
-				display: flex;
-				flex-direction: column;
-				padding: 0 30upx 0 24upx;
-				overflow: hidden;
-				.title{
-					font-size: $font-base + 2upx;
-					color: $font-color-dark;
-					line-height: 1;
-				}
-				.attr-box{
-					font-size: $font-sm + 2upx;
-					color: $font-color-light;
-					padding: 10upx 12upx;
-				}
-				.price{
-					font-size: $font-base + 2upx;
-					color: $font-color-dark;
-					&:before{
-						content: '￥';
-						font-size: $font-sm;
-						margin: 0 2upx 0 8upx;
-					}
-				}
-			}
-		}
+			<view class="tj-sction">
+				<view class="tj-item">
+					<text class="num">128.8</text>
+					<text>余额</text>
+				</view>
+				<view class="tj-item">
+					<text class="num">0</text>
+					<text>优惠券</text>
+				</view>
+				<view class="tj-item">
+					<text class="num">20</text>
+					<text>积分</text>
+				</view>
+			</view>
+			<!-- 订单 -->
+			<view class="order-section">
+				<view class="order-item" @click="navTo('/pages/order/order?state=0')" hover-class="common-hover"  :hover-stay-time="50">
+					<text class="yticon icon-shouye"></text>
+					<text>全部订单</text>
+				</view>
+				<view class="order-item" @click="navTo('/pages/order/order?state=1')"  hover-class="common-hover" :hover-stay-time="50">
+					<text class="yticon icon-daifukuan"></text>
+					<text>待付款</text>
+				</view>
+				<view class="order-item" @click="navTo('/pages/order/order?state=2')" hover-class="common-hover"  :hover-stay-time="50">
+					<text class="yticon icon-yishouhuo"></text>
+					<text>待收货</text>
+				</view>
+				<view class="order-item" @click="navTo('/pages/order/order?state=4')" hover-class="common-hover"  :hover-stay-time="50">
+					<text class="yticon icon-shouhoutuikuan"></text>
+					<text>退款/售后</text>
+				</view>
+			</view>
+			<!-- 浏览历史 -->
+			<view class="history-section icon">
+				<view class="sec-header">
+					<text class="yticon icon-lishijilu"></text>
+					<text>浏览历史</text>
+				</view>
+				<scroll-view scroll-x class="h-list">
+					<image @click="navTo('/pages/product/product')" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553105186633&di=c121a29beece4e14269948d990f9e720&imgtype=0&src=http%3A%2F%2Fimg004.hc360.cn%2Fm8%2FM04%2FDE%2FDE%2FwKhQplZ-QteEBvsbAAAAADUkobU751.jpg" mode="aspectFill"></image>
+					<image @click="navTo('/pages/product/product')" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553105231218&di=09534b9833b5243296630e6d5b728eff&imgtype=0&src=http%3A%2F%2Fimg002.hc360.cn%2Fm1%2FM05%2FD1%2FAC%2FwKhQcFQ3iN2EQTo8AAAAAHQU6_8355.jpg" mode="aspectFill"></image>
+					<image @click="navTo('/pages/product/product')" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553105320890&di=c743386be51f2c4c0fd4b75754d14f3c&imgtype=0&src=http%3A%2F%2Fimg007.hc360.cn%2Fhb%2FMTQ1OTg4ODY0MDA3Ny05OTQ4ODY1NDQ%3D.jpg" mode="aspectFill"></image>
+					<image @click="navTo('/pages/product/product')" src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2691146630,2165926318&fm=26&gp=0.jpg" mode="aspectFill"></image>
+					<image @click="navTo('/pages/product/product')" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553105443324&di=8141bf13f3f208c61524d67f9bb83942&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01ac9a5548d29b0000019ae98e6d98.jpg" mode="aspectFill"></image>
+					<image @click="navTo('/pages/product/product')" src="https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=191678693,2701202375&fm=26&gp=0.jpg" mode="aspectFill"></image>
+				</scroll-view>
+				<list-cell icon="icon-iconfontweixin" iconColor="#e07472" title="我的钱包" tips="您的会员还有3天过期"></list-cell>
+				<list-cell icon="icon-dizhi" iconColor="#5fcda2" title="地址管理" @eventClick="navTo('/pages/address/address')"></list-cell>
+				<list-cell icon="icon-share" iconColor="#9789f7" title="分享" tips="邀请好友赢10万大礼"></list-cell>
+				<list-cell icon="icon-pinglun-copy" iconColor="#ee883b" title="晒单" tips="晒单抢红包"></list-cell>
+				<list-cell icon="icon-shoucang_xuanzhongzhuangtai" iconColor="#54b4ef" title="我的收藏"></list-cell>
+				<list-cell icon="icon-shezhi1" iconColor="#e07472" title="创建新组织" border="" @eventClick="navTo('/pages/public/createOrganization')"></list-cell>
+			</view>
+		</view>
+			
+			<!-- 底部菜单栏 -->
+			<view class="action-section"  v-if="isSwitchOrg" >
+				<view class="total-box">
+					<text class="price">您需要先注册</text>
+					<text class="coupon">
+						才可以使用完整的功能
+					</text>
+				</view>
+				<button type="primary" class="no-border confirm-btn" @click="switchOrg">切换</button>
+			</view>
 		
-		.price-box{
-			display: flex;
-			justify-content: flex-end;
-			align-items: baseline;
-			padding: 20upx 30upx;
-			font-size: $font-sm + 2upx;
-			color: $font-color-light;
-			.num{
-				margin: 0 8upx;
-				color: $font-color-dark;
+    </view>  
+</template>  
+<script>  
+	import listCell from '@/components/mix-list-cell';
+    import {mapState,mapMutations} from 'vuex';
+	let startY = 0, moveY = 0, pageAtTop = true;
+    export default {
+		components: {
+			listCell
+		},
+		data(){
+			return {
+				isSwitchOrg:false,
+				coverTransform: 'translateY(0px)',
+				coverTransition: '0s',
+				moving: false,
+				my_organizationInfo:{},
+				my_userInfo:{},
 			}
-			.price{
-				font-size: $font-lg;
-				color: $font-color-dark;
-				&:before{
-					content: '￥';
-					font-size: $font-sm;
-					margin: 0 2upx 0 8upx;
+		},
+		onLoad(){
+			
+			if(this.$store.state.organizationInfo.hasOrganization){
+				this.my_organizationInfo = this.$store.state.organizationInfo.organizationInfoList[0].d
+				console.log(this.my_organizationInfo,'------------my_organizationInfo')
+			}
+		},
+		// #ifndef MP
+		onNavigationBarButtonTap(e) {
+			const index = e.index;
+			if (index === 0) {
+				this.navTo('/pages/set/set');
+			}else if(index === 1){
+				// #ifdef APP-PLUS
+				const pages = getCurrentPages();
+				const page = pages[pages.length - 1];
+				const currentWebview = page.$getAppWebview();
+				currentWebview.hideTitleNViewButtonRedDot({
+					index
+				});
+				// #endif
+				uni.navigateTo({
+					url: '/pages/notice/notice'
+				})
+			}
+		},
+		// #endif
+        computed: {
+			...mapState(['hasLogin','userInfo','hasOrganization','organizationInfo'])
+		},
+        methods: {
+			...mapMutations(['login','getOrganization']),
+			switchOrganization(){
+				console.log('---------------switchOrganization')
+					uni.navigateTo({
+						url: 'pages/organization/switchOrganization'
+					})
+				
+			},
+
+			/**
+			 * 统一跳转接口,拦截未登录路由
+			 * navigator标签现在默认没有转场动画，所以用view
+			 */
+			navTo(url){
+				if(!this.hasLogin){
+					url = '/pages/public/login';
 				}
+				uni.navigateTo({  
+					url
+				})  
+			}, 
+	
+			/**
+			 *  会员卡下拉和回弹
+			 *  1.关闭bounce避免ios端下拉冲突
+			 *  2.由于touchmove事件的缺陷（以前做小程序就遇到，比如20跳到40，h5反而好很多），下拉的时候会有掉帧的感觉
+			 *    transition设置0.1秒延迟，让css来过渡这段空窗期
+			 *  3.回弹效果可修改曲线值来调整效果，推荐一个好用的bezier生成工具 http://cubic-bezier.com/
+			 */
+			coverTouchstart(e){
+				if(pageAtTop === false){
+					return;
+				}
+				this.coverTransition = 'transform .1s linear';
+				startY = e.touches[0].clientY;
+			},
+			coverTouchmove(e){
+				moveY = e.touches[0].clientY;
+				let moveDistance = moveY - startY;
+				if(moveDistance < 0){
+					this.moving = false;
+					return;
+				}
+				this.moving = true;
+				if(moveDistance >= 80 && moveDistance < 100){
+					moveDistance = 80;
+				}
+		
+				if(moveDistance > 0 && moveDistance <= 80){
+					this.coverTransform = `translateY(${moveDistance}px)`;
+				}
+			},
+			coverTouchend(){
+				if(this.moving === false){
+					return;
+				}
+				this.moving = false;
+				this.coverTransition = 'transform 0.3s cubic-bezier(.21,1.93,.53,.64)';
+				this.coverTransform = 'translateY(0px)';
 			}
+        }  
+    }  
+</script>  
+<style lang='scss'>
+	%flex-center {
+	 display:flex;
+	 flex-direction: column;
+	 justify-content: center;
+	 align-items: center;
+	}
+	%section {
+	  display:flex;
+	  justify-content: space-around;
+	  align-content: center;
+	  background: #fff;
+	  border-radius: 10upx;
+	}
+
+	.user-section{
+		height: 520upx;
+		padding: 100upx 30upx 0;
+		position:relative;
+		.bg{
+			position:absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			filter: blur(1px);
+			opacity: .7;
 		}
-		.action-box{
-			display: flex;
-			justify-content: flex-end;
-			align-items: center;
-			height: 100upx;
-			position: relative;
-			padding-right: 30upx;
+	}
+	.user-info-box{
+		height: 180upx;
+		display:flex;
+		align-items:center;
+		position:relative;
+		z-index: 1;
+		.portrait{
+			width: 130upx;
+			height: 130upx;
+			border:5upx solid #fff;
+			border-radius: 50%;
 		}
-		.action-btn{
-			width: 160upx;
-			height: 60upx;
-			margin: 0;
-			margin-left: 24upx;
-			padding: 0;
-			text-align: center;
-			line-height: 60upx;
-			font-size: $font-sm + 2upx;
+		.username{
+			font-size: $font-lg + 6upx;
 			color: $font-color-dark;
-			background: #fff;
-			border-radius: 100px;
-			&:after{
-				border-radius: 100px;
+			margin-left: 20upx;
+		}
+	}
+
+	.vip-card-box{
+		display:flex;
+		flex-direction: column;
+		color: #f7d680;
+		height: 240upx;
+		background: linear-gradient(left, rgba(0,0,0,.7), rgba(0,0,0,.8));
+		border-radius: 16upx 16upx 0 0;
+		overflow: hidden;
+		position: relative;
+		padding: 20upx 24upx;
+		.card-bg{
+			text-align: right;
+			position:absolute;
+			top: 20upx;
+			right: 0;
+			width: auto;
+			height: auto;
+		}
+		.b-btn{
+			position: absolute;
+			right: 20upx;
+			top: 16upx;
+			width: 132upx;
+			height: 40upx;
+			text-align: center;
+			line-height: 40upx;
+			font-size: 22upx;
+			color: #36343c;
+			border-radius: 20px;
+			background: linear-gradient(left, #f9e6af, #ffd465);
+			z-index: 1;
+		}
+		.tit{
+			font-size: $font-base+2upx;
+			color: #f7d680;
+			margin-bottom: 28upx;
+			.yticon{
+				color: #f6e5a3;
+				margin-right: 16upx;
 			}
-			&.recom{
-				background: #fff9f9;
-				color: $base-color;
-				&:after{
-					border-color: #f7bcc8;
-				}
+		}
+		.e-b{
+			font-size: $font-sm;
+			color: #d8cba9;
+			margin-top: 10upx;
+		}
+	}
+	.cover-container{
+		background: $page-color-base;
+		margin-top: -150upx;
+		padding: 0 30upx;
+		position:relative;
+		background: #f5f5f5;
+		padding-bottom: 20upx;
+		.arc{
+			position:absolute;
+			left: 0;
+			top: -34upx;
+			width: 100%;
+			height: 36upx;
+		}
+	}
+	.tj-sction{
+		@extend %section;
+		.tj-item{
+			@extend %flex-center;
+			flex-direction: column;
+			height: 140upx;
+			font-size: $font-sm;
+			color: #75787d;
+		}
+		.num{
+			font-size: $font-lg;
+			color: $font-color-dark;
+			margin-bottom: 8upx;
+		}
+	}
+	.order-section{
+		@extend %section;
+		padding: 28upx 0;
+		margin-top: 20upx;
+		.order-item{
+			@extend %flex-center;
+			width: 120upx;
+			height: 120upx;
+			border-radius: 10upx;
+			font-size: $font-sm;
+			color: $font-color-dark;
+		}
+		.yticon{
+			font-size: 48upx;
+			margin-bottom: 18upx;
+			color: #fa436a;
+		}
+		.icon-shouhoutuikuan{
+			font-size:44upx;
+		}
+	}
+	.history-section{
+		padding: 30upx 0 0;
+		margin-top: 20upx;
+		background: #fff;
+		border-radius:10upx;
+		.sec-header{
+			display:flex;
+			align-items: center;
+			font-size: $font-base;
+			color: $font-color-dark;
+			line-height: 40upx;
+			margin-left: 30upx;
+			.yticon{
+				font-size: 44upx;
+				color: #5eba8f;
+				margin-right: 16upx;
+				line-height: 40upx;
+			}
+		}
+		.h-list{
+			white-space: nowrap;
+			padding: 30upx 30upx 0;
+			image{
+				display:inline-block;
+				width: 160upx;
+				height: 160upx;
+				margin-right: 20upx;
+				border-radius: 10upx;
 			}
 		}
 	}
 	
-	
-	/* load-more */
-	.uni-load-more {
-		display: flex;
-		flex-direction: row;
-		height: 80upx;
-		align-items: center;
-		justify-content: center
-	}
-	
-	.uni-load-more__text {
-		font-size: 28upx;
-		color: #999
-	}
-	
-	.uni-load-more__img {
-		height: 24px;
-		width: 24px;
-		margin-right: 10px
-	}
-	
-	.uni-load-more__img>view {
-		position: absolute
-	}
-	
-	.uni-load-more__img>view view {
-		width: 6px;
-		height: 2px;
-		border-top-left-radius: 1px;
-		border-bottom-left-radius: 1px;
-		background: #999;
-		position: absolute;
-		opacity: .2;
-		transform-origin: 50%;
-		animation: load 1.56s ease infinite
-	}
-	
-	.uni-load-more__img>view view:nth-child(1) {
-		transform: rotate(90deg);
-		top: 2px;
-		left: 9px
-	}
-	
-	.uni-load-more__img>view view:nth-child(2) {
-		transform: rotate(180deg);
-		top: 11px;
-		right: 0
-	}
-	
-	.uni-load-more__img>view view:nth-child(3) {
-		transform: rotate(270deg);
-		bottom: 2px;
-		left: 9px
-	}
-	
-	.uni-load-more__img>view view:nth-child(4) {
-		top: 11px;
-		left: 0
-	}
-	
-	.load1,
-	.load2,
-	.load3 {
-		height: 24px;
-		width: 24px
-	}
-	
-	.load2 {
-		transform: rotate(30deg)
-	}
-	
-	.load3 {
-		transform: rotate(60deg)
-	}
-	
-	.load1 view:nth-child(1) {
-		animation-delay: 0s
-	}
-	
-	.load2 view:nth-child(1) {
-		animation-delay: .13s
-	}
-	
-	.load3 view:nth-child(1) {
-		animation-delay: .26s
-	}
-	
-	.load1 view:nth-child(2) {
-		animation-delay: .39s
-	}
-	
-	.load2 view:nth-child(2) {
-		animation-delay: .52s
-	}
-	
-	.load3 view:nth-child(2) {
-		animation-delay: .65s
-	}
-	
-	.load1 view:nth-child(3) {
-		animation-delay: .78s
-	}
-	
-	.load2 view:nth-child(3) {
-		animation-delay: .91s
-	}
-	
-	.load3 view:nth-child(3) {
-		animation-delay: 1.04s
-	}
-	
-	.load1 view:nth-child(4) {
-		animation-delay: 1.17s
-	}
-	
-	.load2 view:nth-child(4) {
-		animation-delay: 1.3s
-	}
-	
-	.load3 view:nth-child(4) {
-		animation-delay: 1.43s
-	}
-	
-	@-webkit-keyframes load {
-		0% {
-			opacity: 1
-		}
-	
-		100% {
-			opacity: .2
-		}
-	}
 </style>

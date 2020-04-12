@@ -126,6 +126,20 @@ const  myUniRequest = (options) => {
   })
 }
 
+
+/**
+ * 统一跳转接口,拦截未登录路由
+ * navigator标签现在默认没有转场动画，所以用view
+ */
+const myNavTo = (url) => {
+	if (!this.hasLogin) {
+		url = '/pages/public/login';
+	}
+	uni.navigateTo({
+		url
+	})
+}
+
 Vue.config.productionTip = false
 Vue.prototype.$global_dict = {
 	app_id:'wx32c0a3c1a3bfa81d',
@@ -133,7 +147,7 @@ Vue.prototype.$global_dict = {
 }
 Vue.prototype.$fire = new Vue();
 Vue.prototype.$store = store;
-Vue.prototype.$api = {msg,msg_success,msg_fail, json, prePage ,myUniRequest};
+Vue.prototype.$api = {msg,msg_success,msg_fail, json, prePage ,myUniRequest,myNavTo};
 
 App.mpType = 'app'
 

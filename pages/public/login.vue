@@ -25,7 +25,7 @@
 				</view>
 			</view>
 			<button class="sms-btn" @click="send_sms" :disabled="send_sms_ing">发送验证码</button>
-			<button class="confirm-btn" @click="toLogin" :disabled="logining">注册</button>
+			<button class="confirm-btn" @click="toLogin" >注册</button>
 		</view>
 		<!-- <view class="register-section">
 			还没有账号?

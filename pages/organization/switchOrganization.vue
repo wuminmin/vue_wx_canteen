@@ -11,7 +11,7 @@
 			<block v-for="(item, index) in organization_list" :key="index">
 				<uni-list>
 					<uni-list-item :show-arrow="false">{{item.d.organization_name}}</uni-list-item>
-					<uni-list-item :show-arrow="false">统一代码：{{item.d.certificate_for_uniform_social_credit_code}}</uni-list-item>
+					<uni-list-item :show-arrow="false">统一代码：{{item.d.organization_main_id}}</uni-list-item>
 					<uni-list-item :show-arrow="false">地址：{{item.d.organization_address}}</uni-list-item>
 					<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">切换单位</button>
 				</uni-list>

@@ -10,12 +10,12 @@
 			<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
 			<block v-for="(item, index) in organization_apply_list" :key="index">
 				<uni-list>
-					<uni-list-item :show-arrow="false">统一代码：{{item.d.certificate_for_uniform_social_credit_code}}</uni-list-item>
+					<uni-list-item :show-arrow="false">统一代码：{{item.d.organization_main_id}}</uni-list-item>
 					<uni-list-item :show-arrow="false">姓名：{{item.d.apply_person_name}}</uni-list-item>
 					<uni-list-item :show-arrow="false">部门：{{item.d.apply_for_department.name}}</uni-list-item>
 					<uni-list-item :show-arrow="false">用工：{{item.d.apply_for_labor_contract.name}}</uni-list-item>
-					<button class="confirm-btn"  @click="toClick({item,'yes'})">同意申请</button>
-				<button class="sms-btn"  @click="toClick({item,'no'})">拒绝申请</button>
+					<button class="confirm-btn"  @click="toClick($event,item,'yes')">同意申请</button>
+				<button class="sms-btn"  @click="toClick($event,item,'no')">拒绝申请</button>
 				</uni-list>
 			</block>
 		</view>
@@ -77,17 +77,16 @@
 		methods: {
 			...mapMutations(['login', 'joinOrganization']),
 			
-			toClick:function (item) {
+			toClick:function (e,item,param) {
 				console.log(item)
-				let myUrl = 'wx_swicth_organization'
+				let myUrl = 'wx_appral_apply_for_join_organization'
 				let token = this.userInfo.token
-				let sendData = {organizationInfo:item}
+				let sendData = {apply:item,param:param}
 				myRequest({
 					url:myUrl,data:{token:token,sendData:sendData}
 				}).then(res => {
 					console.log(res,'--------------myRequest res')
 					if(res.data.status == 1){
-						this.login(res.data.data.userInfo)
 						uni.navigateBack();
 					}else{
 						this.$api.msg_fail(res.msg)

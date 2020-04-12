@@ -6,7 +6,7 @@
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
 			<view class="welcome">
-				创建组织！
+				创建供应商！
 			</view>
 			<view class="input-content">
 				统一代码：
@@ -15,15 +15,15 @@
 				</view>
 			</view>
 			<view class="input-content">
-				组织名称：
+				供应商名称：
 				<view class="input-item">
-					<input v-model="organization_name"/>
+					<input v-model="supplier_name"/>
 				</view>
 			</view>
 			<view class="input-content">
 				地址：
 				<view class="input-item">
-					<input v-model="organization_address"/>
+					<input v-model="supplier_address"/>
 				</view>
 			</view>
 			<view class="input-content">
@@ -50,7 +50,7 @@
 					<input v-model="manage_person_mobile"/>
 				</view>
 			</view>
-			<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">创建组织</button>
+			<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">创建</button>
 		</view>
 	</view>
 </template>
@@ -64,10 +64,10 @@
 	export default {
 		data() {
 			return {
-				organization_main_id:'',
+				supplier_main_id:'',
 				certificate_for_uniform_social_credit_code:'',
-				organization_name:'',
-				organization_address:'',
+				supplier_name:'',
+				supplier_address:'',
 				legal_person_name:'',
 				legal_person_mobile:'',
 				manage_person_name:'',
@@ -77,24 +77,24 @@
 		onLoad() {
 		},
 		computed: {
-			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
+			...mapState(['hasLogin', 'userInfo'])
 		},
 		methods: {
-			...mapMutations(['login', 'joinOrganization']),
+			...mapMutations(['login']),
 			toJoin:function (){
 				let self = this
 				let sendData = {
-					organization_main_id:self.organization_main_id,
+					supplier_main_id:self.supplier_main_id,
 					certificate_for_uniform_social_credit_code:self.certificate_for_uniform_social_credit_code,
-					organization_name:self.organization_name,
-					organization_address:self.organization_address,
+					supplier_name:self.supplier_name,
+					supplier_address:self.supplier_address,
 					legal_person_name:self.legal_person_name,
 					legal_person_mobile:self.legal_person_mobile,
 					manage_person_name:self.manage_person_name,
 					manage_person_mobile:self.manage_person_mobile,
 				}
 				uni.request({
-					url:self.$global_dict.wx_url+'wx_create_organization',
+					url:self.$global_dict.wx_url+'wx_create_supplier',
 					data:{
 						token : self.$store.state.userInfo.token ,
 						sendData : sendData

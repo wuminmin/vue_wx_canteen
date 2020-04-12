@@ -84,7 +84,7 @@
 			toJoin:function (){
 				let self = this
 				let sendData = {
-					certificate_for_uniform_social_credit_code:self.my_organizationInfo.d.certificate_for_uniform_social_credit_code,
+					organization_main_id:self.my_organizationInfo.d.organization_main_id,
 					name:self.name,
 					department:self.department[self.index_department],
 					labor_contract:self.labor_contract[self.index_labor_contract]

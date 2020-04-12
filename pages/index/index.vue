@@ -32,7 +32,7 @@
 				<text>我的单位</text>
 			</view>
 			<view class="cate-item">
-				<image  @click="navToLogin2" src="/static/temp/c5.png"></image>
+				<image  @click="navToSupplier" src="/static/temp/c5.png"></image>
 				<text>供应商</text>
 			</view>
 			<view class="cate-item">
@@ -247,11 +247,11 @@
 			<button type="primary" class="no-border confirm-btn" @click="navToLogin">去注册</button>
 		</view>
 		<!-- 底部菜单栏 -->
-		<view class="action-section"  v-if="!hasOrganization&&hasLogin" >
+		<view class="action-section"  v-if="hasLogin" >
 			<view class="total-box">
-				<text class="price">您需要加入公司/组织</text>
+				<text class="price">可以加入</text>
 				<text class="coupon">
-					才可以使用完整的功能
+					多个公司或者组织
 				</text>
 			</view>
 			<button type="primary" class="no-border confirm-btn" @click="navToJoinOrganization">加入公司/组织</button>
@@ -302,6 +302,8 @@
 									});
 								}else if(res.data.status == 1){
 									self.login(res.data.data.userInfo);
+									self.setOrganizationInfo(res.data.data.organizationInfo)
+									self.setGoods_info(res.data.data.goods_info)
 									self.loadData();
 								}
 								self.loading = false;
@@ -324,7 +326,7 @@
 			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
 		},
 		methods: {
-			...mapMutations(['login']),
+			...mapMutations(['login','setOrganizationInfo','setGoods_info']),
 			/**
 			 * 请求静态数据只是为了代码不那么乱
 			 * 分次请求未作整合
@@ -341,7 +343,6 @@
 				this.titleNViewBackground = carouselList[0].background;
 				this.swiperLength = carouselList.length;
 				this.carouselList = carouselList;
-				
 				let goodsList = await this.$api.json('goodsList');
 				this.goodsList = goodsList || [];
 			},
@@ -885,7 +886,7 @@
 			flex: 1;
 			display:flex;
 			flex-direction: column;
-			text-align:right;
+			text-align:left;
 			padding-right: 40upx;
 			.price{
 				font-size: $font-lg;

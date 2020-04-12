@@ -8,11 +8,11 @@
 				根据组织名称或统代码查询！
 			</view>
 			<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
-			<block v-for="(item, index) in organization_list" :key="index">
+			<block v-for="(item, index) in supplier_list" :key="index">
 				<uni-list>
-					<uni-list-item :show-arrow="false">{{item.d.organization_name}}</uni-list-item>
-					<uni-list-item :show-arrow="false">统一代码：{{item.d.organization_main_id}}</uni-list-item>
-					<uni-list-item :show-arrow="false">地址：{{item.d.organization_address}}</uni-list-item>
+					<uni-list-item :show-arrow="false">{{item.d.supplier_name}}</uni-list-item>
+					<uni-list-item :show-arrow="false">统一代码：{{item.d.supplier_main_id}}</uni-list-item>
+					<uni-list-item :show-arrow="false">地址：{{item.d.supplier_address}}</uni-list-item>
 					<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">切换单位</button>
 				</uni-list>
 			</block>
@@ -42,20 +42,20 @@
 				password: '',
 				toJoinIng: false,
 				send_sms_ing: false,
-				organization_name: '',
-				organization_list: [],
+				supplier_name: '',
+				supplier_list: [],
 			}
 		},
 		onLoad() {
-			let myUrl = 'wx_get_organizationInfo_list'
+			let myUrl = 'wx_get_supplierInfo_list'
 			let token = this.userInfo.token
 			let sendData = {searchVal:''}
-			this.$api.myUniRequest()({
+			this.$api.myUniRequest({
 				url:myUrl,data:{token:token,sendData:sendData}
 			}).then(res => {
-				console.log(res,'------------myUniRequest res')
+				console.log(res,'--------------this.$api.myUniRequest res')
 				if(res.data.status == 1){
-					this.organization_list = res.data.data.organization_list
+					this.supplier_list = res.data.data.supplier_list
 					this.$api.msg_success(res.msg)
 				}else{
 					this.$api.msg_fail(res.msg)
@@ -63,20 +63,20 @@
 	        })
 		},
 		computed: {
-			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
+			...mapState(['hasLogin', 'hassupplier', 'userInfo', 'supplierInfo'])
 		},
 		methods: {
-			...mapMutations(['login', 'joinOrganization']),
+			...mapMutations(['login', 'joinsupplier']),
 			
 			toJoin:function (item) {
 				console.log(item)
-				let myUrl = 'wx_swicth_organization'
+				let myUrl = 'wx_swicth_supplier'
 				let token = this.userInfo.token
-				let sendData = {organizationInfo:item}
+				let sendData = {supplierInfo:item}
 				this.$api.myUniRequest({
 					url:myUrl,data:{token:token,sendData:sendData}
 				}).then(res => {
-					console.log(res,'--------------myRequest res')
+					console.log(res,'--------------this.$api.myUniRequest res')
 					if(res.data.status == 1){
 						this.login(res.data.data.userInfo)
 						uni.navigateBack();
@@ -95,7 +95,7 @@
 					'searchVal': res.value
 				}
 				uni.request({
-					url: self.$global_dict.wx_url + 'wx_get_organizationInfo_list',
+					url: self.$global_dict.wx_url + 'wx_get_supplierInfo_list',
 					data: {
 						token: self.$store.state.userInfo.token,
 						sendData: sendData,
@@ -113,7 +113,7 @@
 								duration: 2000
 							});
 						} else if (res.data.status == 1) {
-							self.organization_list = res.data.data.organization_list
+							self.supplier_list = res.data.data.supplier_list
 							uni.showToast({
 								title: res.data.msg,
 								icon: 'success',

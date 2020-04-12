@@ -11,6 +11,8 @@ const store = new Vuex.Store({
 		userInfo: {},
 		organizationInfo:{},
 		goods_info:{},
+		supplier_info:{},
+		supplier_department_info:{},
 	},
 	mutations: {
 		login(state, provider) {
@@ -36,13 +38,22 @@ const store = new Vuex.Store({
 			console.log(state.organizationInfo,'------------store-mutations-setOrganizationInfo');
 			
 		},
-		setGoods_info(state,provider){
-			state.goods_info = provider;
+		set_supplier_info(state,provider){
+			state.supplier_info = provider;
 			uni.setStorage({//缓存用户登陆状态
-			    key: 'goods_info',  
+			    key: 'supplier_info',  
 			    data: provider  
 			}) 
-			console.log(state.goods_info,'------------store-mutations-setGoods_info');
+			console.log(state.supplier_info,'------------store-mutations-set_supplier_info');
+			
+		},
+		set_supplier_department_info(state,provider){
+			state.supplier_department_info = provider;
+			uni.setStorage({//缓存用户登陆状态
+			    key: 'supplier_department_info',  
+			    data: provider  
+			}) 
+			console.log(state.supplier_department_info,'------------store-mutations-set_supplier_department_info');
 			
 		},
 		joinOrganization(state,provider){

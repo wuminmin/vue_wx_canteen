@@ -103,12 +103,6 @@
 			}
 		},
 		onLoad() {
-
-			if (this.$store.state.organizationInfo.hasOrganization) {
-				this.my_organizationInfo = this.$store.state.organizationInfo.organizationInfoList[0].d
-				console.log(this.my_organizationInfo, '------------my_organizationInfo')
-			}
-			
 		},
 		// #ifndef MP
 		onNavigationBarButtonTap(e) {

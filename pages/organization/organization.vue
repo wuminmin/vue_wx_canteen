@@ -21,8 +21,8 @@
 					<text class="yticon icon-iLinkapp-"></text>
 					{{userInfo.active_organization}}
 				</view>
-				<text class="e-m">DCloud Union</text>
-				<text class="e-b">开通会员开发无bug 一测就上线</text>
+				<!-- <text class="e-m">DCloud Union</text>
+				<text class="e-b">开通会员开发无bug 一测就上线</text> -->
 			</view>
 		</view>
 
@@ -66,26 +66,9 @@
 					<text>退款/售后</text>
 				</view>
 			</view>
-			<!-- 浏览历史 -->
+			<!-- 代办事项 -->
 			<view class="history-section icon">
-				<view class="sec-header">
-					<text class="yticon icon-lishijilu"></text>
-					<text>浏览历史</text>
-				</view>
-				<scroll-view scroll-x class="h-list">
-					<image @click="navTo('/pages/product/product')" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553105186633&di=c121a29beece4e14269948d990f9e720&imgtype=0&src=http%3A%2F%2Fimg004.hc360.cn%2Fm8%2FM04%2FDE%2FDE%2FwKhQplZ-QteEBvsbAAAAADUkobU751.jpg"
-					 mode="aspectFill"></image>
-					<image @click="navTo('/pages/product/product')" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553105231218&di=09534b9833b5243296630e6d5b728eff&imgtype=0&src=http%3A%2F%2Fimg002.hc360.cn%2Fm1%2FM05%2FD1%2FAC%2FwKhQcFQ3iN2EQTo8AAAAAHQU6_8355.jpg"
-					 mode="aspectFill"></image>
-					<image @click="navTo('/pages/product/product')" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553105320890&di=c743386be51f2c4c0fd4b75754d14f3c&imgtype=0&src=http%3A%2F%2Fimg007.hc360.cn%2Fhb%2FMTQ1OTg4ODY0MDA3Ny05OTQ4ODY1NDQ%3D.jpg"
-					 mode="aspectFill"></image>
-					<image @click="navTo('/pages/product/product')" src="https://ss2.bdstatic.com/70cFvnSh_Q1YnxGkpoWK1HF6hhy/it/u=2691146630,2165926318&fm=26&gp=0.jpg"
-					 mode="aspectFill"></image>
-					<image @click="navTo('/pages/product/product')" src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1553105443324&di=8141bf13f3f208c61524d67f9bb83942&imgtype=0&src=http%3A%2F%2Fimg.zcool.cn%2Fcommunity%2F01ac9a5548d29b0000019ae98e6d98.jpg"
-					 mode="aspectFill"></image>
-					<image @click="navTo('/pages/product/product')" src="https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=191678693,2701202375&fm=26&gp=0.jpg"
-					 mode="aspectFill"></image>
-				</scroll-view>
+				<list-cell icon="icon-lishijilu" iconColor="#e07472" title="代办事项" tips="申请审批" @eventClick="navTo('/pages/organization/approvalApply')"></list-cell>
 				<list-cell icon="icon-iconfontweixin" iconColor="#e07472" title="我的钱包" tips="您的会员还有3天过期"></list-cell>
 				<list-cell icon="icon-dizhi" iconColor="#5fcda2" title="地址管理" @eventClick="navTo('/pages/address/address')"></list-cell>
 				<list-cell icon="icon-share" iconColor="#9789f7" title="分享" tips="邀请好友赢10万大礼"></list-cell>
@@ -94,18 +77,6 @@
 				<list-cell icon="icon-shezhi1" iconColor="#e07472" title="创建新组织" border="" @eventClick="navTo('/pages/public/createOrganization')"></list-cell>
 			</view>
 		</view>
-
-		<!-- 底部菜单栏 -->
-		<view class="action-section" v-if="isSwitchOrg">
-			<view class="total-box">
-				<text class="price">您需要先注册</text>
-				<text class="coupon">
-					才可以使用完整的功能
-				</text>
-			</view>
-			<button type="primary" class="no-border confirm-btn" @click="switchOrg">切换</button>
-		</view>
-
 	</view>
 </template>
 <script>
@@ -123,12 +94,12 @@
 		},
 		data() {
 			return {
-				isSwitchOrg: false,
 				coverTransform: 'translateY(0px)',
 				coverTransition: '0s',
 				moving: false,
 				my_organizationInfo: {},
 				my_userInfo: {},
+				organization_apply_list: [],
 			}
 		},
 		onLoad() {
@@ -137,6 +108,7 @@
 				this.my_organizationInfo = this.$store.state.organizationInfo.organizationInfoList[0].d
 				console.log(this.my_organizationInfo, '------------my_organizationInfo')
 			}
+			
 		},
 		// #ifndef MP
 		onNavigationBarButtonTap(e) {
@@ -417,6 +389,19 @@
 			white-space: nowrap;
 			padding: 30upx 30upx 0;
 
+			image {
+				display: inline-block;
+				width: 160upx;
+				height: 160upx;
+				margin-right: 20upx;
+				border-radius: 10upx;
+			}
+		}
+		
+		.v-list {
+			white-space: nowrap;
+			padding: 30upx 30upx 0;
+		
 			image {
 				display: inline-block;
 				width: 160upx;

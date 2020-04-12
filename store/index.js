@@ -14,7 +14,9 @@ const store = new Vuex.Store({
 		login(state, provider) {
 			state.hasLogin = true;
 			state.userInfo = provider;
+			console.log(provider.active_organization,'-----------------provider.active_organization')
 			if(provider.active_organization == ''){
+				console.log('--------------state.hasOrganization = false')
 				state.hasOrganization = false
 			}else{
 				state.hasOrganization = true
@@ -25,17 +27,8 @@ const store = new Vuex.Store({
 			}) 
 			console.log(state.userInfo,'------------store-mutations-login');
 		},
-		getOrganization(state,provider){
-			state.hasOrganization = provider.hasOrganization;
-			state.organizationInfo = provider;
-			uni.setStorage({//缓存用户登陆状态
-			    key: 'organizationInfo',  
-			    data: provider  
-			}) 
-			console.log(state.organizationInfo,'------------store-mutations-organizationInfo');
-		},
 		joinOrganization(state,provider){
-			state.hasOrganization = true;
+			// state.hasOrganization = true;
 			state.organizationInfo = provider;
 			uni.setStorage({
 			    key: 'organizationInfo',  

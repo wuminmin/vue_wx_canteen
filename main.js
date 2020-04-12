@@ -105,6 +105,7 @@ const  myUniRequest = (options) => {
   uni.showLoading({  //加载loading开始
       title: '加载中'
   });
+  console.log(options,'--------------export default function myRequest')
   return new Promise((resolve, reject) => {
     uni.request({
       url: 'https://wx.wuminmin.top/canteen_alliance/' + url,

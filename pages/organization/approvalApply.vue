@@ -2,25 +2,22 @@
 	<view class="container">
 		<view class="left-bottom-sign"></view>
 		<!-- <view class="right-top-sign"></view> -->
-		<view class="back-btn yticon icon-zuojiantou-up" @click="navBack"></view>
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
 			<view class="welcome">
 				根据组织名称或统代码查询！
 			</view>
 			<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
-			<block v-for="(item, index) in organization_list" :key="index">
+			<block v-for="(item, index) in organization_apply_list" :key="index">
 				<uni-list>
-					<uni-list-item :show-arrow="false">{{item.d.organization_name}}</uni-list-item>
 					<uni-list-item :show-arrow="false">统一代码：{{item.d.certificate_for_uniform_social_credit_code}}</uni-list-item>
-					<uni-list-item :show-arrow="false">地址：{{item.d.organization_address}}</uni-list-item>
-					<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">申请加入</button>
+					<uni-list-item :show-arrow="false">姓名：{{item.d.apply_person_name}}</uni-list-item>
+					<uni-list-item :show-arrow="false">部门：{{item.d.apply_for_department.name}}</uni-list-item>
+					<uni-list-item :show-arrow="false">用工：{{item.d.apply_for_labor_contract.name}}</uni-list-item>
+					<button class="confirm-btn"  @click="toClick({item,'yes'})">同意申请</button>
+				<button class="sms-btn"  @click="toClick({item,'no'})">拒绝申请</button>
 				</uni-list>
 			</block>
-		</view>
-		<view class="register-section">
-			还没有公司或者组织?
-			<button class=".sms-btn" @click="toCreate">马上创建一个！</button>
 		</view>
 	</view>
 </template>
@@ -32,6 +29,7 @@
 	import uniNumberBox from '@/components/uni-number-box.vue'
 	import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
 	import uniSection from '@/components/uni-section/uni-section.vue'
+	import myRequest from '@/myTool.js'
 	export default {
 		components: {
 			uniList,
@@ -48,27 +46,55 @@
 				toJoinIng: false,
 				send_sms_ing: false,
 				organization_name: '',
-				organization_list: [],
+				organization_apply_list: [],
 			}
 		},
-		onLoad() {},
+		onLoad() {
+			let myUrl = 'wx_get_apply_for_join_organization'
+			let token = this.userInfo.token
+			let sendData = {
+				apply_status: 'todo'
+			}
+			this.$api.myUniRequest({
+				url: myUrl,
+				data: {
+					token: token,
+					sendData: sendData
+				}
+			}).then(res => {
+				console.log(res, '--------------myRequest res')
+				if (res.data.status == 1) {
+					this.organization_apply_list = res.data.data.organization_apply_list
+				} else {
+					this.$api.msg_fail(res.msg)
+				}
+			})
+			
+		},
 		computed: {
 			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
 		},
 		methods: {
 			...mapMutations(['login', 'joinOrganization']),
-			toJoin:function (item) {
+			
+			toClick:function (item) {
 				console.log(item)
-				this.joinOrganization(item);
-				uni.navigateTo({
-					url: '/pages/public/joinDepartment'
+				let myUrl = 'wx_swicth_organization'
+				let token = this.userInfo.token
+				let sendData = {organizationInfo:item}
+				myRequest({
+					url:myUrl,data:{token:token,sendData:sendData}
+				}).then(res => {
+					console.log(res,'--------------myRequest res')
+					if(res.data.status == 1){
+						this.login(res.data.data.userInfo)
+						uni.navigateBack();
+					}else{
+						this.$api.msg_fail(res.msg)
+					}
 				})
 			},
-			toCreate() {
-				uni.navigateTo({
-					url: '/pages/public/createOrganization'
-				})
-			},
+			
 			search(res) {
 				uni.showToast({
 					title: '搜索：' + res.value,
@@ -76,10 +102,10 @@
 				})
 				let self = this;
 				let sendData = {
-					'searchVal': res.value
+					apply_status: 'todo'
 				}
 				uni.request({
-					url: self.$global_dict.wx_url + 'wx_search_organization',
+					url: self.$global_dict.wx_url + 'wx_get_apply_for_join_organization',
 					data: {
 						token: self.$store.state.userInfo.token,
 						sendData: sendData,
@@ -97,7 +123,7 @@
 								duration: 2000
 							});
 						} else if (res.data.status == 1) {
-							self.organization_list = res.data.data.organization_list
+							self.organization_apply_list = res.data.data.organization_apply_list
 							uni.showToast({
 								title: res.data.msg,
 								icon: 'success',
@@ -137,83 +163,15 @@
 				})
 			},
 
-			inputChange(e) {
-				const key = e.currentTarget.dataset.key;
-				this[key] = e.detail.value;
-			},
-			navBack() {
-				uni.navigateBack();
-			},
-			toRegist() {
-				this.$api.msg('去注册');
-			},
-			async toLogin() {
-				this.logining = true;
-				const {
-					mobile,
-					password
-				} = this;
-				/* 数据验证模块
-				if(!this.$api.match({
-					mobile,
-					password
-				})){
-					this.logining = false;
-					return;
-				}
-				*/
-				const sendData = {
-					mobile,
-					password
-				};
-				const self = this;
-				uni.login({
-					success: function(res) {
-						if (res.code) {
-							console.log(res)
-							self.loading = true;
-							uni.request({
-								url: self.$global_dict.wx_url + 'wx_register',
-								data: {
-									app_id: self.$global_dict.app_id,
-									code: res.code,
-									sendData: sendData,
-								},
-								header: {
-									'custom-header': 'hello' //自定义请求头信息
-								},
-								success: (res) => {
-									console.log(res);
-									if (res.data.status == 2) {
-										self.$api.msg(res.msg);
-										self.logining = false;
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'fail',
-											mask: true,
-											duration: 2000
-										});
-									} else if (res.data.status == 1) {
-										self.login(res.data.data);
-										uni.navigateBack();
-									} else {
-										console.log(res);
-									}
-									self.loading = false;
-								},
-								fail: (err) => {
-									console.log('request fail', err);
-									uni.showModal({
-										content: err.errMsg,
-										showCancel: false
-									});
-									self.loading = false;
-								}
-							});
-						}
-					},
-				})
-			}
+			// inputChange(e) {
+			// 	const key = e.currentTarget.dataset.key;
+			// 	this[key] = e.detail.value;
+			// },
+			// navBack() {
+			// 	uni.navigateBack();
+			// },
+			
+		
 		},
 	}
 </script>

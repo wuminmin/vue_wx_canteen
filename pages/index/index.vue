@@ -275,7 +275,6 @@
 		},
 
 		onLoad() {
-			console.log(this.$store.state.hasLogin,'---------------hasLogin');
 			const self = this;
 			self.loadStaticData();
 			uni.login({
@@ -303,7 +302,6 @@
 									});
 								}else if(res.data.status == 1){
 									self.login(res.data.data.userInfo);
-									self.getOrganization(res.data.data.organizationInfo);
 									self.loadData();
 								}
 								self.loading = false;
@@ -326,7 +324,7 @@
 			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
 		},
 		methods: {
-			...mapMutations(['login','getOrganization']),
+			...mapMutations(['login']),
 			/**
 			 * 请求静态数据只是为了代码不那么乱
 			 * 分次请求未作整合

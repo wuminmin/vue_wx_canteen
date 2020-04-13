@@ -66,61 +66,46 @@ const prePage = ()=>{
 	return prePage.$vm;
 }
 
-// const myUniRequest = (myUrl,token,sendData) =>{
-// 	uni.request({
-// 		url:'https://wx.wuminmin.top/canteen_alliance/'+myUrl,
-// 		data:{
-// 			token : token ,
-// 			sendData : sendData
-// 		},
-// 		success:function(res){
-// 			console.log(res,'-----------myUniRequest')
-// 			// if(res.status == 1){
-// 			// 	uni.showToast({
-// 			// 		title: res.data.msg,
-// 			// 		icon: 'success',
-// 			// 		mask: true,
-// 			// 		duration: 3000
-// 			// 	});
-// 			// }else{
-// 			// 	uni.showToast({
-// 			// 		title: res.data.msg,
-// 			// 		icon: 'none',
-// 			// 		mask: true,
-// 			// 		duration: 3000
-// 			// 	});
-// 			// }
-// 			return res
-// 		},
-// 		fail: (err) => {
-// 			console.log(err)
-// 			return err
-// 		}
-// 	})
-// }
-
-
 const  myUniRequest = (options) => {
   const { url, method, data, header } = options
   uni.showLoading({  //加载loading开始
       title: '加载中'
   });
-  console.log(options,'--------------export default function myRequest')
+  console.log(options,'--------------myUniRequest 入参')
   return new Promise((resolve, reject) => {
     uni.request({
       url: 'https://wx.wuminmin.top/canteen_alliance/' + url,
       data: data || {},
       method: method || 'GET',
       header: header || {},
-      timeout: 6000, // 请求超时时间设置
+      timeout: 10000, // 请求超时时间设置
       success: (res) => {
+		 console.log(res,'--------------myUniRequest 出参')
+		 uni.hideLoading() // 请求成功后让加载loading消失
+		 if(res.data.status == 1){
+			 uni.showToast({
+			 	title: res.data.msg,
+			 	icon: 'success',
+			 	mask: true,
+			 	duration: 2000
+			 });
+		 }else{
+			 uni.showToast({
+			 	title: res.data.msg,
+			 	icon: 'none',
+			 	mask: true,
+			 	duration: 4000
+			 });
+		 }
         resolve(res)
       },
       fail: (err) => {
+		 console.log(res,'--------------myUniRequest 异常')
         reject(err)
       },
       complete: () => {
         uni.hideLoading() // 请求成功后让加载loading消失
+		
       }
     })
   })
@@ -131,23 +116,15 @@ const  myUniRequest = (options) => {
  * 统一跳转接口,拦截未登录路由
  * navigator标签现在默认没有转场动画，所以用view
  */
-const myNavTo = (url) => {
-	if (!this.hasLogin) {
-		url = '/pages/public/login';
-	}
-	uni.navigateTo({
-		url
-	})
-}
 
 Vue.config.productionTip = false
 Vue.prototype.$global_dict = {
-	app_id:'wx32c0a3c1a3bfa81d',
+	app_id:'wx2203267d98fed645',
 	wx_url:'https://wx.wuminmin.top/canteen_alliance/'
 }
 Vue.prototype.$fire = new Vue();
 Vue.prototype.$store = store;
-Vue.prototype.$api = {msg,msg_success,msg_fail, json, prePage ,myUniRequest,myNavTo};
+Vue.prototype.$api = {msg,msg_success,msg_fail, json, prePage ,myUniRequest};
 
 App.mpType = 'app'
 

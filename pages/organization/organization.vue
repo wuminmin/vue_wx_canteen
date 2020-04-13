@@ -5,21 +5,21 @@
 			<image class="bg" src="/static/user-bg.jpg"></image>
 			<view class="user-info-box">
 				<view class="portrait-box">
-					<image class="portrait" :src="userInfo.portrait || '/static/missing-face.png'"></image>
+					<image class="portrait" :src="user_info.portrait || '/static/missing-face.png'"></image>
 				</view>
 				<view class="info-box">
-					<text class="username">{{userInfo.nickname || '游客'}}</text>
+					<text class="username">{{user_info.nickname || '游客'}}</text>
 				</view>
 			</view>
 			<view class="vip-card-box">
-				<!-- <text class="card-bg"> {{userInfo.active_organization}}</text> -->
+				<!-- <text class="card-bg"> {{user_info.active_organization}}</text> -->
 				<!-- <image class="card-bg" src="/static/vip-card-bg.png" mode=""></image> -->
 				<view class="b-btn" @click="switchOrganization">
 					切换单位
 				</view>
 				<view class="tit">
 					<text class="yticon icon-iLinkapp-"></text>
-					{{userInfo.active_organization}}
+					{{organizationInfo.organization_name}}
 				</view>
 				<!-- <text class="e-m">DCloud Union</text>
 				<text class="e-b">开通会员开发无bug 一测就上线</text> -->
@@ -98,11 +98,14 @@
 				coverTransition: '0s',
 				moving: false,
 				my_organizationInfo: {},
-				my_userInfo: {},
+				my_user_info: {},
 				organization_apply_list: [],
 			}
 		},
 		onLoad() {
+			if(!this.organization_info.has){
+				uni.navigateTo({url:'/pages/public/joinOrganization'})
+			}
 		},
 		// #ifndef MP
 		onNavigationBarButtonTap(e) {
@@ -118,17 +121,15 @@
 					index
 				});
 				// #endif
-				uni.navigateTo({
-					url: '/pages/notice/notice'
-				})
+				uni.navigateTo({url: '/pages/notice/notice'})
 			}
 		},
 		// #endif
 		computed: {
-			...mapState(['hasLogin', 'userInfo', 'hasOrganization', 'organizationInfo'])
+			...mapState([ 'user_info', 'hasOrganization', 'organization_info'])
 		},
 		methods: {
-			...mapMutations(['login', 'getOrganization']),
+			...mapMutations(['set_user_info', 'set_organization_info']),
 			switchOrganization() {
 				console.log('---------------switchOrganization')
 				this.navTo('/pages/organization/switchOrganization');
@@ -142,7 +143,7 @@
 			 * navigator标签现在默认没有转场动画，所以用view
 			 */
 			navTo(url) {
-				if (!this.hasLogin) {
+				if (!this.user_info.has_user_info) {
 					url = '/pages/public/login';
 				}
 				uni.navigateTo({

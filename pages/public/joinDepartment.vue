@@ -69,10 +69,10 @@
 			this.labor_contract = this.organizationInfo.d.labor_contract
 		},
 		computed: {
-			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
+			...mapState(['hasLogin', 'hasOrganization', 'user_info', 'organization_info'])
 		},
 		methods: {
-			...mapMutations(['login', 'joinOrganization']),
+			...mapMutations(['set_user_info', 'joinOrganization']),
 			bindPickerChange_department: function(e) {
 				console.log('picker发送选择改变，携带值为：' + e.detail.value)
 				this.index_department = e.detail.value
@@ -92,7 +92,7 @@
 				uni.request({
 					url:self.$global_dict.wx_url+'wx_joinDepartment',
 					data:{
-						token : self.$store.state.userInfo.token ,
+						token : self.$store.state.user_info.token ,
 						sendData : sendData
 					},
 					success:function(res){

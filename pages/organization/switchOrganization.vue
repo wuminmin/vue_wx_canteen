@@ -47,38 +47,23 @@
 			}
 		},
 		onLoad() {
-			let myUrl = 'wx_get_organizationInfo_list'
-			let token = this.userInfo.token
-			let sendData = {searchVal:''}
-			this.$api.myUniRequest()({
-				url:myUrl,data:{token:token,sendData:sendData}
-			}).then(res => {
-				console.log(res,'------------myUniRequest res')
-				if(res.data.status == 1){
-					this.organization_list = res.data.data.organization_list
-					this.$api.msg_success(res.msg)
-				}else{
-					this.$api.msg_fail(res.msg)
-				}
-	        })
 		},
 		computed: {
-			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
+			...mapState(['hasLogin', 'hasOrganization', 'user_info', 'organization_info'])
 		},
 		methods: {
-			...mapMutations(['login', 'joinOrganization']),
+			...mapMutations(['set_user_info', 'joinOrganization']),
 			
 			toJoin:function (item) {
 				console.log(item)
 				let myUrl = 'wx_swicth_organization'
-				let token = this.userInfo.token
+				let token = this.user_info.token
 				let sendData = {organizationInfo:item}
 				this.$api.myUniRequest({
 					url:myUrl,data:{token:token,sendData:sendData}
 				}).then(res => {
-					console.log(res,'--------------myRequest res')
 					if(res.data.status == 1){
-						this.login(res.data.data.userInfo)
+						this.login(res.data.data.user_info)
 						uni.navigateBack();
 					}else{
 						this.$api.msg_fail(res.msg)
@@ -86,62 +71,18 @@
 				})
 			},
 			search(res) {
-				uni.showToast({
-					title: '搜索：' + res.value,
-					icon: 'none'
-				})
-				let self = this;
-				let sendData = {
-					'searchVal': res.value
-				}
-				uni.request({
-					url: self.$global_dict.wx_url + 'wx_get_organizationInfo_list',
-					data: {
-						token: self.$store.state.userInfo.token,
-						sendData: sendData,
-					},
-					header: {
-						'custom-header': 'hello' //自定义请求头信息
-					},
-					success: (res) => {
-						console.log(res);
-						if (res.data.status == 2) {
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'fail',
-								mask: true,
-								duration: 2000
-							});
-						} else if (res.data.status == 1) {
-							self.organization_list = res.data.data.organization_list
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'success',
-								mask: true,
-								duration: 2000
-							});
-						} else {
-							console.log(res);
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'fail',
-								mask: true,
-								duration: 2000
-							});
-						}
-						setTimeout(() => {
-							self.send_sms_ing = false;
-						}, 15000);
-					},
-					fail: (err) => {
-						console.log('request fail', err);
-						uni.showModal({
-							content: err.errMsg,
-							showCancel: false
-						});
+				let myUrl = 'wx_get_organizationInfo_list'
+				let token = this.user_info.token
+				let sendData = {searchVal:res.value}
+				this.$api.myUniRequest({
+					url:myUrl,data:{token:token,sendData:sendData}
+				}).then(res => {
+					if(res.data.status == 1){
+						this.organization_list = res.data.data.organization_list
+					}else{
+						this.$api.msg_fail(res.msg)
 					}
-				});
-
+				})
 			},
 			input(res) {
 				this.searchVal = res.value

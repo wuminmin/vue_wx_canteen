@@ -81,7 +81,7 @@
 		{
 			"path": "pages/public/joinOrganization",
 			"style": {
-				"navigationBarTitleText": "",
+				"navigationBarTitleText": "加入组织",
 				"navigationStyle": "custom",
 				"app-plus": {
 					"titleNView": false,

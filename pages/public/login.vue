@@ -7,7 +7,7 @@
 		<view class="wrapper">
 			<view class="left-top-sign">注册！</view>
 			<view class="welcome">
-				欢迎回来！
+				欢迎注册！
 			</view>
 			<view class="input-content">
 				<view class="input-item">
@@ -16,11 +16,11 @@
 				</view>
 				<view class="input-item">
 					<text class="tit">手机号码</text>
-					<input type="number" :value="mobile" placeholder="请输入手机号码" maxlength="11" data-key="mobile" @input="inputChange" />
+					<input type="number" :value="mobile" placeholder="手机号码" maxlength="11" data-key="mobile" @input="inputChange" />
 				</view>
 				<view class="input-item">
 					<text class="tit">短信验证码</text>
-					<input type="mobile" value="" placeholder="8-18位不含特殊字符的数字、字母组合" placeholder-class="input-empty" maxlength="20"
+					<input type="number" value="" placeholder="6位数字验证码" placeholder-class="input-empty" maxlength="20"
 					 password data-key="password" @input="inputChange" @confirm="toLogin" />
 				</view>
 			</view>
@@ -50,10 +50,9 @@
 			}
 		},
 		onLoad() {
-
 		},
 		methods: {
-			...mapMutations(['login']),
+			...mapMutations(['set_user_info']),
 			send_sms(e) {
 				console.log(e);
 				let self = this;
@@ -63,56 +62,22 @@
 				uni.login({
 					success: function(res) {
 						if (res.code) {
-							console.log(res)
-							self.send_sms_ing = true;
-							uni.request({
-								url: self.$global_dict.wx_url + 'wx_send_sms',
-								data: {
-									app_id: self.$global_dict.app_id,
+							let myUrl = 'wx_send_sms'
+							let token = ''
+							let sendData = {
+								app_id: self.$global_dict.app_id,
 									code: res.code,
 									sendData: sendData,
-								},
-								header: {
-									'custom-header': 'hello' //自定义请求头信息
-								},
-								success: (res) => {
-									console.log(res);
-									if (res.data.status == 2) {
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'fail',
-											mask: true,
-											duration: 2000
-										});
-									} else if (res.data.status == 1) {
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'success',
-											mask: true,
-											duration: 2000
-										});
-									} else {
-										console.log(res);
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'fail',
-											mask: true,
-											duration: 2000
-										});
-									}
+								}
+							self.$api.myUniRequest({
+								url:myUrl,data:{token:token,sendData:sendData}
+							}).then(res => {
+								if(res.data.status == 1){
 									setTimeout(() => {
 										self.send_sms_ing = false;
 									}, 15000);
-
-								},
-								fail: (err) => {
-									console.log('request fail', err);
-									uni.showModal({
-										content: err.errMsg,
-										showCancel: false
-									});
 								}
-							});
+							})
 						}
 					},
 				})
@@ -128,83 +93,27 @@
 				this.$api.msg('去注册');
 			},
 			async toLogin() {
-				this.logining = true;
-				const {
-					nickname,
-					mobile,
-					password
-				} = this;
-				/* 数据验证模块
-				if(!this.$api.match({
-					mobile,
-					password
-				})){
-					this.logining = false;
-					return;
-				}
-				*/
-				const sendData = {
-					nickname,
-					mobile,
-					password
-				};
+				const {nickname,mobile,password} = this;
 				const self = this;
 				uni.login({
 					success: function(res) {
 						if (res.code) {
-							console.log(res)
-							self.loading = true;
-							uni.request({
-								url: self.$global_dict.wx_url + 'wx_register',
-								data: {
-									app_id: self.$global_dict.app_id,
-									code: res.code,
-									sendData: sendData,
-								},
-								header: {
-									'custom-header': 'hello' //自定义请求头信息
-								},
-								success: (res) => {
-									console.log(res);
-									if (res.data.status == 2) {
-										self.$api.msg(res.msg);
-										self.logining = false;
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'fail',
-											mask: true,
-											duration: 2000
-										});
-									} else if (res.data.status == 1) {
-										self.login(res.data.data);
-										uni.navigateBack();
-									} else {
-										console.log(res);
-									}
-									self.loading = false;
-								},
-								fail: (err) => {
-									console.log('request fail', err);
-									uni.showModal({
-										content: err.errMsg,
-										showCancel: false
-									});
-									self.loading = false;
+							let myUrl = 'wx_register'
+							let token = ''
+							let app_id = self.$global_dict.app_id
+							let code = res.code
+							const sendData = {nickname,	mobile,	password,app_id,code}
+							self.$api.myUniRequest({
+								url:myUrl,data:{token:token,sendData:sendData}
+							}).then(res => {
+								if(res.data.status == 1){
+									self.login(res.data.data);
+									uni.navigateBack();
 								}
-							});
+							})
 						}
 					},
 				})
-
-				// const result = await this.$api.json('userInfo');
-				// console.log(result);
-				// if(result.status === 1){
-				// 	this.login(result.data);
-				//                 uni.navigateBack();  
-				// }else{
-				// 	this.$api.msg(result.msg);
-				// 	this.logining = false;
-				// }
 			}
 		},
 	}

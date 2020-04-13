@@ -5,15 +5,15 @@
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
 			<view class="welcome">
-				根据组织名称或统代码查询！
+				根据供应商名称或统代码查询！
 			</view>
 			<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
 			<block v-for="(item, index) in supplier_list" :key="index">
 				<uni-list>
 					<uni-list-item :show-arrow="false">{{item.d.supplier_name}}</uni-list-item>
-					<uni-list-item :show-arrow="false">统一代码：{{item.d.supplier_main_id}}</uni-list-item>
+					<uni-list-item :show-arrow="false">统一代码：{{item.d.certificate_for_uniform_social_credit_code}}</uni-list-item>
 					<uni-list-item :show-arrow="false">地址：{{item.d.supplier_address}}</uni-list-item>
-					<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">切换单位</button>
+					<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">切换供应商</button>
 				</uni-list>
 			</block>
 		</view>
@@ -48,12 +48,11 @@
 		},
 		onLoad() {
 			let myUrl = 'wx_get_supplierInfo_list'
-			let token = this.userInfo.token
+			let token = this.user_info.token
 			let sendData = {searchVal:''}
 			this.$api.myUniRequest({
 				url:myUrl,data:{token:token,sendData:sendData}
 			}).then(res => {
-				console.log(res,'--------------this.$api.myUniRequest res')
 				if(res.data.status == 1){
 					this.supplier_list = res.data.data.supplier_list
 					this.$api.msg_success(res.msg)
@@ -63,22 +62,23 @@
 	        })
 		},
 		computed: {
-			...mapState(['hasLogin', 'hassupplier', 'userInfo', 'supplierInfo'])
+			...mapState(['hasLogin', 'hassupplier', 'user_info', 'supplier_info'])
 		},
 		methods: {
-			...mapMutations(['login', 'joinsupplier']),
+			...mapMutations(['set_user_info', 'set_supplier_info','set_supplier_department_info_list']),
 			
 			toJoin:function (item) {
 				console.log(item)
 				let myUrl = 'wx_swicth_supplier'
-				let token = this.userInfo.token
+				let token = this.user_info.token
 				let sendData = {supplierInfo:item}
 				this.$api.myUniRequest({
 					url:myUrl,data:{token:token,sendData:sendData}
 				}).then(res => {
-					console.log(res,'--------------this.$api.myUniRequest res')
 					if(res.data.status == 1){
-						this.login(res.data.data.userInfo)
+						this.login(res.data.data.user_info)
+						this.set_supplier_info(res.data.data.supplier_info)
+						this.set_supplier_department_info_list(res.data.data.supplier_department_info_list)
 						uni.navigateBack();
 					}else{
 						this.$api.msg_fail(res.msg)
@@ -86,62 +86,18 @@
 				})
 			},
 			search(res) {
-				uni.showToast({
-					title: '搜索：' + res.value,
-					icon: 'none'
-				})
-				let self = this;
-				let sendData = {
-					'searchVal': res.value
-				}
-				uni.request({
-					url: self.$global_dict.wx_url + 'wx_get_supplierInfo_list',
-					data: {
-						token: self.$store.state.userInfo.token,
-						sendData: sendData,
-					},
-					header: {
-						'custom-header': 'hello' //自定义请求头信息
-					},
-					success: (res) => {
-						console.log(res);
-						if (res.data.status == 2) {
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'fail',
-								mask: true,
-								duration: 2000
-							});
-						} else if (res.data.status == 1) {
-							self.supplier_list = res.data.data.supplier_list
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'success',
-								mask: true,
-								duration: 2000
-							});
-						} else {
-							console.log(res);
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'fail',
-								mask: true,
-								duration: 2000
-							});
-						}
-						setTimeout(() => {
-							self.send_sms_ing = false;
-						}, 15000);
-					},
-					fail: (err) => {
-						console.log('request fail', err);
-						uni.showModal({
-							content: err.errMsg,
-							showCancel: false
-						});
+				let myUrl = 'wx_get_supplierInfo_list'
+				let token = this.user_info.token
+				let sendData = {searchVal:res.value}
+				this.$api.myUniRequest({
+					url:myUrl,data:{token:token,sendData:sendData}
+				}).then(res => {
+					if(res.data.status == 1){
+						this.supplier_list = res.data.data.supplier_list
+					}else{
+						this.$api.msg_fail(res.msg)
 					}
-				});
-
+				})
 			},
 			input(res) {
 				this.searchVal = res.value
@@ -163,73 +119,7 @@
 			toRegist() {
 				this.$api.msg('去注册');
 			},
-			async toLogin() {
-				this.logining = true;
-				const {
-					mobile,
-					password
-				} = this;
-				/* 数据验证模块
-				if(!this.$api.match({
-					mobile,
-					password
-				})){
-					this.logining = false;
-					return;
-				}
-				*/
-				const sendData = {
-					mobile,
-					password
-				};
-				const self = this;
-				uni.login({
-					success: function(res) {
-						if (res.code) {
-							console.log(res)
-							self.loading = true;
-							uni.request({
-								url: self.$global_dict.wx_url + 'wx_register',
-								data: {
-									app_id: self.$global_dict.app_id,
-									code: res.code,
-									sendData: sendData,
-								},
-								header: {
-									'custom-header': 'hello' //自定义请求头信息
-								},
-								success: (res) => {
-									console.log(res);
-									if (res.data.status == 2) {
-										self.$api.msg(res.msg);
-										self.logining = false;
-										uni.showToast({
-											title: res.data.msg,
-											icon: 'fail',
-											mask: true,
-											duration: 2000
-										});
-									} else if (res.data.status == 1) {
-										self.login(res.data.data);
-										uni.navigateBack();
-									} else {
-										console.log(res);
-									}
-									self.loading = false;
-								},
-								fail: (err) => {
-									console.log('request fail', err);
-									uni.showModal({
-										content: err.errMsg,
-										showCancel: false
-									});
-									self.loading = false;
-								}
-							});
-						}
-					},
-				})
-			}
+		
 		},
 	}
 </script>

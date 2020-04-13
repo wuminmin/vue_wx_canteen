@@ -51,7 +51,7 @@
 		},
 		onLoad() {
 			let myUrl = 'wx_get_apply_for_join_organization'
-			let token = this.userInfo.token
+			let token = this.user_info.token
 			let sendData = {
 				apply_status: 'todo'
 			}
@@ -62,7 +62,6 @@
 					sendData: sendData
 				}
 			}).then(res => {
-				console.log(res, '--------------myRequest res')
 				if (res.data.status == 1) {
 					this.organization_apply_list = res.data.data.organization_apply_list
 				} else {
@@ -72,20 +71,19 @@
 			
 		},
 		computed: {
-			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
+			...mapState(['hasLogin', 'hasOrganization', 'user_info', 'organization_info'])
 		},
 		methods: {
-			...mapMutations(['login', 'joinOrganization']),
+			...mapMutations(['set_user_info', 'joinOrganization']),
 			
 			toClick:function (e,item,param) {
 				console.log(item)
 				let myUrl = 'wx_appral_apply_for_join_organization'
-				let token = this.userInfo.token
+				let token = this.user_info.token
 				let sendData = {apply:item,param:param}
 				myRequest({
 					url:myUrl,data:{token:token,sendData:sendData}
 				}).then(res => {
-					console.log(res,'--------------myRequest res')
 					if(res.data.status == 1){
 						uni.navigateBack();
 					}else{
@@ -106,7 +104,7 @@
 				uni.request({
 					url: self.$global_dict.wx_url + 'wx_get_apply_for_join_organization',
 					data: {
-						token: self.$store.state.userInfo.token,
+						token: self.$store.state.user_info.token,
 						sendData: sendData,
 					},
 					header: {

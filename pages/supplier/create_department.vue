@@ -55,45 +55,26 @@
 		onLoad() {
 		},
 		computed: {
-			...mapState(['hasLogin', 'userInfo','supplier_info'])
+			...mapState(['hasLogin', 'user_info','supplier_info'])
 		},
 		methods: {
-			...mapMutations(['login']),
+			...mapMutations(['set_user_info','set_supplier_department_info_list']),
 			toJoin:function (){
-				let self = this
 				let sendData = {
-					supplier_main_id:this.$store.state.supplier_info.supplier_main_id,
-					supplier_department_name:self.supplier_department_name,
-					supplier_department_address:self.supplier_department_address,
-					supplier_department_manage_person_name:self.supplier_department_manage_person_name,
-					supplier_department_manage_person_mobile:self.supplier_department_manage_person_mobile,
+					supplier_main_id:this.supplier_info.supplier_main_id,
+					supplier_department_name:this.supplier_department_name,
+					supplier_department_address:this.supplier_department_address,
+					supplier_department_manage_person_name:this.supplier_department_manage_person_name,
+					supplier_department_manage_person_mobile:this.supplier_department_manage_person_mobile,
 				}
-				uni.request({
-					url:self.$global_dict.wx_url+'wx_create_supplier_department',
-					data:{
-						token : self.$store.state.userInfo.token ,
-						sendData : sendData
-					},
-					success:function(res){
-						console.log(res)
-						if(res.status == 1){
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'success',
-								mask: true,
-								duration: 3000
-							});
-						}else{
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'none',
-								mask: true,
-								duration: 3000
-							});
-						}
-					},
-					fail: (err) => {
-						console.log(err)
+				let myUrl = 'wx_create_supplier_department'
+				let token = this.user_info.token
+				this.$api.myUniRequest({url:myUrl,data:{token:token,sendData:sendData}}).then(res => {
+					if (res.data.status == 1) {
+						this.set_supplier_department_info_list(res.data.data.supplier_department_info_list)
+						this.$api.msg_success(res.msg)
+					} else {
+						this.$api.msg_fail(res.msg)
 					}
 				})
 			},

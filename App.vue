@@ -7,14 +7,14 @@
 	} from 'vuex';
 	export default {
 		methods: {
-			...mapMutations(['login'])
+			...mapMutations(['set_user_info'])
 		},
 		onLaunch: function() {
-			let userInfo = uni.getStorageSync('userInfo') || '';
-			if(userInfo.id){
+			let user_info = uni.getStorageSync('user_info') || '';
+			if(user_info.id){
 				//更新登陆状态
 				uni.getStorage({
-					key: 'userInfo',
+					key: 'user_info',
 					success: (res) => {
 						this.login(res.data);
 					}

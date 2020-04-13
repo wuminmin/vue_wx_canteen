@@ -1,5 +1,5 @@
 /* 用户 */
-const userInfo = {
+const user_info = {
 	status: 1,
 	data: {
 		id: 1,
@@ -652,7 +652,7 @@ export default {
 	cartList,
 	detailData,
 	lazyLoadList,
-	userInfo,
+	user_info,
 	shareList,
 	goodsList,
 	orderList,

@@ -77,10 +77,10 @@
 		onLoad() {
 		},
 		computed: {
-			...mapState(['hasLogin', 'userInfo'])
+			...mapState(['hasLogin', 'user_info'])
 		},
 		methods: {
-			...mapMutations(['login']),
+			...mapMutations(['set_user_info']),
 			toJoin:function (){
 				let self = this
 				let sendData = {
@@ -96,7 +96,7 @@
 				uni.request({
 					url:self.$global_dict.wx_url+'wx_create_supplier',
 					data:{
-						token : self.$store.state.userInfo.token ,
+						token : self.$store.state.user_info.token ,
 						sendData : sendData
 					},
 					success:function(res){

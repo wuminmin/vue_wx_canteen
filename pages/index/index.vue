@@ -237,7 +237,7 @@
 		</view>
 		
 		<!-- 底部菜单栏 -->
-		<view class="action-section"  v-if="!hasLogin" >
+		<view class="action-section"  v-if="!user_info.has_user_info" >
 			<view class="total-box">
 				<text class="price">您需要先注册</text>
 				<text class="coupon">
@@ -247,7 +247,7 @@
 			<button type="primary" class="no-border confirm-btn" @click="navToLogin">去注册</button>
 		</view>
 		<!-- 底部菜单栏 -->
-		<view class="action-section"  v-if="hasLogin" >
+		<view class="action-section"  v-if="!organization_info.has_organization_info" >
 			<view class="total-box">
 				<text class="price">可以加入</text>
 				<text class="coupon">
@@ -273,65 +273,47 @@
 				organization:{},
 			};
 		},
-
 		onLoad() {
 			const self = this;
 			self.loadStaticData();
 			uni.login({
 				success: function(res) {
 					if (res.code) {
-						console.log(res)
-						self.loading = true;
-						uni.request({
-							url: self.$global_dict.wx_url + 'wx_login',
-							data: {
-								app_id: self.$global_dict.app_id,
-								code: res.code,
-							},
-							header: {
-								'custom-header': 'hello' //自定义请求头信息
-							},
-							success: (res) => {
-								console.log(res);
-								if(res.data.status == 2){
-									uni.showToast({
-										title: res.data.message,
-										icon: 'success',
-										mask: true,
-										duration: duration
-									});
-								}else if(res.data.status == 1){
-									self.login(res.data.data.userInfo);
-									self.setOrganizationInfo(res.data.data.organizationInfo)
-									self.set_supplier_info(res.data.data.set_supplier_info)
-									self.set_supplier_department_info(res.data.data.set_supplier_department_info)
-									self.loadData();
-								}
-								self.loading = false;
-							},
-							fail: (err) => {
-								console.log('request fail', err);
-								uni.showModal({
-									content: err.errMsg,
-									showCancel: false
-								});
-								self.loading = false;
+						let myUrl = 'wx_login'
+						let token = ''
+						let app_id = self.$global_dict.app_id
+						let code = res.code
+						const sendData = {app_id,code}
+						self.$api.myUniRequest({
+							url:myUrl,data:{token:token,sendData:sendData}
+						}).then(res => {
+							if(res.data.status == 1){
+								self.set_user_info(res.data.data.user_info)
+								self.set_organization_info(res.data.data.organization_info)
+								self.set_supplier_info(res.data.data.supplier_info)
+								self.set_supplier_department_info(res.data.data.supplier_department_info)
+								self.set_supplier_department_info_list(res.data.data.supplier_department_info_list)
+								self.loadData();
+							}else{
+								self.$api.msg_fail(res.msg)
 							}
-						});
+						}).catch((err) =>{
+							console.log(err);
+						})
 					}
 				},
 			})
-						
 		},
 		computed: {
-			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
+			...mapState([ 'user_info', 'organization_info'])
 		},
 		methods: {
 			...mapMutations([
-				'login',
-				'setOrganizationInfo',
+				'set_user_info',
+				'set_organization_info',
 				'set_supplier_info',
 				'set_supplier_department_info',
+				'set_supplier_department_info_list',
 			]),
 			/**
 			 * 请求静态数据只是为了代码不那么乱

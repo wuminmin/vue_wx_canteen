@@ -5,21 +5,21 @@
 			<image class="bg" src="/static/user-bg.jpg"></image>
 			<view class="user-info-box">
 				<view class="portrait-box">
-					<image class="portrait" :src="userInfo.portrait || '/static/missing-face.png'"></image>
+					<image class="portrait" :src="user_info.portrait || '/static/missing-face.png'"></image>
 				</view>
 				<view class="info-box">
-					<text class="username">{{userInfo.nickname || '游客'}}</text>
+					<text class="username">{{user_info.nickname || '游客'}}</text>
 				</view>
 			</view>
 			<view class="vip-card-box">
-				<!-- <text class="card-bg"> {{userInfo.active_organization}}</text> -->
+				<!-- <text class="card-bg"> {{user_info.active_organization}}</text> -->
 				<!-- <image class="card-bg" src="/static/vip-card-bg.png" mode=""></image> -->
 				<view class="b-btn" @click="switchSupplier">
 					切换供应商
 				</view>
 				<view class="tit">
 					<text class="yticon icon-iLinkapp-"></text>
-					{{userInfo.active_supplier}}
+					{{supplier_info.supplier_name}}
 				</view>
 				<!-- <text class="e-m">DCloud Union</text>
 				<text class="e-b">开通会员开发无bug 一测就上线</text> -->
@@ -68,24 +68,24 @@
 			</view>
 			<!-- 代办事项 -->
 			<view class="history-section icon">
-				<list-cell icon="icon-shezhi1" iconColor="#e07472" title="创建供应商" border="" @eventClick="navTo('/pages/supplier/createSupplier')"></list-cell>
-				<list-cell icon="icon-shezhi1" iconColor="#e07472" title="创建部门" border="" @eventClick="navTo('/pages/supplier/create_department')"></list-cell>
+				<list-cell icon="icon-shezhi1" iconColor="#e07472" 
+				title="创建供应商" tips="点这里" border="" @eventClick="navTo('/pages/supplier/createSupplier')"></list-cell>
+				<list-cell icon="icon-shezhi1" iconColor="#e07472" 
+				title="创建部门" tips="点这里" border="" @eventClick="navTo('/pages/supplier/create_department')"></list-cell>
 			</view>
 			
 			<view class="history-section icon"
-			v-for="(item , index) in my_wx_supplier_department_info_list" v-bind:key="index"
+			v-for="(item , index) in supplier_department_info_list" :key="index"
 			>
-				<list-cell icon="icon-dizhi" iconColor="#5fcda2" title="item.d.supplier_department_name" border="" @eventClick="navTo('/pages/supplier/manage_department')"></list-cell>
+				<list-cell icon="icon-dizhi" iconColor="#5fcda2" 
+				:title="item.d.supplier_department_name" tips="点这里" border="" @eventClick="navTo('/pages/supplier/manage_department')"></list-cell>
 			</view>
 		</view>
 	</view>
 </template>
 <script>
 	import listCell from '@/components/mix-list-cell';
-	import {
-		mapState,
-		mapMutations
-	} from 'vuex';
+	import { mapState,mapMutations } from 'vuex';
 	let startY = 0,
 		moveY = 0,
 		pageAtTop = true;
@@ -99,54 +99,17 @@
 				coverTransition: '0s',
 				moving: false,
 				my_supplierInfo: {},
-				my_userInfo: {},
-				my_wx_supplier_department_info_list:[],
+				my_user_info: {},
 			}
 		},
 		computed: {
-			...mapState(['hasLogin', 'hassupplier', 'userInfo', 'supplier_info'])
+			...mapState(['hasLogin', 'hassupplier', 'user_info',
+			 'supplier_info','supplier_department_info_list'])
 		},
 		onLoad() {
-			let myUrl = 'wx_get_my_wx_supplier_department_info_list'
-			let token = this.userInfo.token
-			let sendData = {supplier_info:this.supplier_info}
-			this.$api.myUniRequest({
-				url:myUrl,data:{token:token,sendData:sendData}
-			}).then(res => {
-				console.log(res,'--------------this.$api.myUniRequest res')
-				if(res.data.status == 1){
-					this.my_wx_supplier_department_info_list = res.data.data.supplier_department_info_list
-				}else{
-					this.$api.msg_fail(res.msg)
-				}
-			})
-			
-		},
-		// #ifndef MP
-		onNavigationBarButtonTap(e) {
-			const index = e.index;
-			if (index === 0) {
-				this.navTo('/pages/set/set');
-			} else if (index === 1) {
-				// #ifdef APP-PLUS
-				const pages = getCurrentPages();
-				const page = pages[pages.length - 1];
-				const currentWebview = page.$getAppWebview();
-				currentWebview.hideTitleNViewButtonRedDot({
-					index
-				});
-				// #endif
-				uni.navigateTo({
-					url: '/pages/notice/notice'
-				})
-			}
-		},
-		// #endif
-		computed: {
-			...mapState(['hasLogin', 'userInfo', 'supplierInfo'])
 		},
 		methods: {
-			...mapMutations(['login']),
+			...mapMutations(['set_user_info']),
 			switchSupplier() {
 				console.log('---------------switchSupplier')
 				this.navTo('/pages/supplier/switchSupplier');

@@ -77,10 +77,10 @@
 		onLoad() {
 		},
 		computed: {
-			...mapState(['hasLogin', 'hasOrganization', 'userInfo', 'organizationInfo'])
+			...mapState(['hasLogin', 'hasOrganization', 'user_info', 'organization_info'])
 		},
 		methods: {
-			...mapMutations(['login', 'joinOrganization']),
+			...mapMutations(['set_user_info', 'joinOrganization']),
 			toJoin:function (){
 				let self = this
 				let sendData = {
@@ -96,7 +96,7 @@
 				uni.request({
 					url:self.$global_dict.wx_url+'wx_create_organization',
 					data:{
-						token : self.$store.state.userInfo.token ,
+						token : self.$store.state.user_info.token ,
 						sendData : sendData
 					},
 					success:function(res){

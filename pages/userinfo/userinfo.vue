@@ -4,7 +4,7 @@
 			<image class="bg" src="/static/user-bg.jpg"></image>
 			<text class="bg-upload-btn yticon icon-paizhao"></text>
 			<view class="portrait-box">
-				<image class="portrait" :src="userInfo.portrait || '/static/missing-face.png'"></image>
+				<image class="portrait" :src="user_info.portrait || '/static/missing-face.png'"></image>
 				<text class="pt-upload-btn yticon icon-paizhao"></text>
 			</view>
 		</view>
@@ -23,7 +23,7 @@
 			};
 		},
 		computed:{
-			...mapState(['userInfo']),
+			...mapState(['user_info']),
 		}
 	}
 </script>

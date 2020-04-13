@@ -14,12 +14,12 @@
 			<view class="vip-card-box">
 				<!-- <text class="card-bg"> {{user_info.active_organization}}</text> -->
 				<!-- <image class="card-bg" src="/static/vip-card-bg.png" mode=""></image> -->
-				<view class="b-btn" @click="switchOrganization">
+				<view class="b-btn" @click="navTo('/pages/organization/switchOrganization')">
 					切换单位
 				</view>
 				<view class="tit">
 					<text class="yticon icon-iLinkapp-"></text>
-					{{organizationInfo.organization_name}}
+					{{organization_info.organization_name}}
 				</view>
 				<!-- <text class="e-m">DCloud Union</text>
 				<text class="e-b">开通会员开发无bug 一测就上线</text> -->
@@ -48,7 +48,7 @@
 				</view>
 			</view>
 			<!-- 订单 -->
-			<view class="order-section">
+			<!-- <view class="order-section">
 				<view class="order-item" @click="navTo('/pages/order/order?state=0')" hover-class="common-hover" :hover-stay-time="50">
 					<text class="yticon icon-shouye"></text>
 					<text>全部订单</text>
@@ -65,17 +65,31 @@
 					<text class="yticon icon-shouhoutuikuan"></text>
 					<text>退款/售后</text>
 				</view>
-			</view>
+			</view> -->
 			<!-- 代办事项 -->
 			<view class="history-section icon">
+				<list-cell icon="icon-shezhi1" iconColor="#e07472"
+				title="加入组织" tips="点这里" border="" @eventClick="navTo('/pages/organization/join_organization')"></list-cell>
+				
 				<list-cell icon="icon-lishijilu" iconColor="#e07472" title="代办事项" tips="申请审批" @eventClick="navTo('/pages/organization/approvalApply')"></list-cell>
-				<list-cell icon="icon-iconfontweixin" iconColor="#e07472" title="我的钱包" tips="您的会员还有3天过期"></list-cell>
+				<!-- <list-cell icon="icon-iconfontweixin" iconColor="#e07472" title="我的钱包" tips="您的会员还有3天过期"></list-cell>
 				<list-cell icon="icon-dizhi" iconColor="#5fcda2" title="地址管理" @eventClick="navTo('/pages/address/address')"></list-cell>
 				<list-cell icon="icon-share" iconColor="#9789f7" title="分享" tips="邀请好友赢10万大礼"></list-cell>
 				<list-cell icon="icon-pinglun-copy" iconColor="#ee883b" title="晒单" tips="晒单抢红包"></list-cell>
-				<list-cell icon="icon-shoucang_xuanzhongzhuangtai" iconColor="#54b4ef" title="我的收藏"></list-cell>
+				<list-cell icon="icon-shoucang_xuanzhongzhuangtai" iconColor="#54b4ef" title="我的收藏"></list-cell> -->
+			<list-cell icon="icon-shezhi1" iconColor="#e07472"
+			title="创建新部门" tips="点这里" border="" @eventClick="navTo('/pages/organization/create_department')"></list-cell>
 				<list-cell icon="icon-shezhi1" iconColor="#e07472" title="创建新组织" border="" @eventClick="navTo('/pages/public/createOrganization')"></list-cell>
+			
 			</view>
+			
+			<view class="history-section icon"
+			v-for="(item , index) in organization_department_info_list" :key="index"
+			>
+				<list-cell icon="icon-dizhi" iconColor="#5fcda2" 
+				:title="item.d.organization_department_name" tips="点这里" border="" @eventClick="navTo('/pages/supplier/manage_organization')"></list-cell>
+			</view>
+			
 		</view>
 	</view>
 </template>
@@ -104,8 +118,9 @@
 		},
 		onLoad() {
 			if(!this.organization_info.has){
-				uni.navigateTo({url:'/pages/public/joinOrganization'})
+				uni.navTo('/pages/public/joinOrganization')
 			}
+			
 		},
 		// #ifndef MP
 		onNavigationBarButtonTap(e) {
@@ -126,24 +141,16 @@
 		},
 		// #endif
 		computed: {
-			...mapState([ 'user_info', 'hasOrganization', 'organization_info'])
+			...mapState([ 'user_info', 'organization_department_info_list', 'organization_info'])
 		},
 		methods: {
 			...mapMutations(['set_user_info', 'set_organization_info']),
-			switchOrganization() {
-				console.log('---------------switchOrganization')
-				this.navTo('/pages/organization/switchOrganization');
-				// uni.navigateTo({
-				// 	url: 'pages/organization/switchOrganization'
-				// })
-			},
-
 			/**
 			 * 统一跳转接口,拦截未登录路由
 			 * navigator标签现在默认没有转场动画，所以用view
 			 */
 			navTo(url) {
-				if (!this.user_info.has_user_info) {
+				if (!this.user_info.has) {
 					url = '/pages/public/login';
 				}
 				uni.navigateTo({

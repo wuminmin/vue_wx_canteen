@@ -14,7 +14,7 @@
 			<view class="vip-card-box">
 				<!-- <text class="card-bg"> {{user_info.active_organization}}</text> -->
 				<!-- <image class="card-bg" src="/static/vip-card-bg.png" mode=""></image> -->
-				<view class="b-btn" @click="switchSupplier">
+				<view class="b-btn" @click="navTo('/pages/supplier/switch_supplier')">
 					切换供应商
 				</view>
 				<view class="tit">
@@ -68,10 +68,14 @@
 			</view>
 			<!-- 代办事项 -->
 			<view class="history-section icon">
+				<list-cell icon="icon-shezhi1" iconColor="#e07472"
+				title="加入供应商" tips="点这里" border="" @eventClick="navTo('/pages/supplier/join_supplier')"></list-cell>
+							
 				<list-cell icon="icon-shezhi1" iconColor="#e07472" 
-				title="创建供应商" tips="点这里" border="" @eventClick="navTo('/pages/supplier/createSupplier')"></list-cell>
+				title="创建供应商" tips="点这里" border="" @eventClick="navTo('/pages/supplier/create_supplier')"></list-cell>
 				<list-cell icon="icon-shezhi1" iconColor="#e07472" 
 				title="创建部门" tips="点这里" border="" @eventClick="navTo('/pages/supplier/create_department')"></list-cell>
+			
 			</view>
 			
 			<view class="history-section icon"
@@ -103,25 +107,22 @@
 			}
 		},
 		computed: {
-			...mapState(['hasLogin', 'hassupplier', 'user_info',
+			...mapState(['user_info',
 			 'supplier_info','supplier_department_info_list'])
 		},
 		onLoad() {
+			if(!this.supplier_info.has){
+				this.navTo('/pages/supplier/join_supplier')
+			}
 		},
 		methods: {
 			...mapMutations(['set_user_info']),
-			switchSupplier() {
-				console.log('---------------switchSupplier')
-				this.navTo('/pages/supplier/switchSupplier');
-				
-			},
-
 			/**
 			 * 统一跳转接口,拦截未登录路由
 			 * navigator标签现在默认没有转场动画，所以用view
 			 */
 			navTo(url) {
-				if (!this.hasLogin) {
+				if (!this.user_info.has) {
 					url = '/pages/public/login';
 				}
 				uni.navigateTo({

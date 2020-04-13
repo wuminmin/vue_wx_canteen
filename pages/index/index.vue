@@ -237,7 +237,7 @@
 		</view>
 		
 		<!-- 底部菜单栏 -->
-		<view class="action-section"  v-if="!user_info.has_user_info" >
+		<view class="action-section"  v-if="!user_info.has" >
 			<view class="total-box">
 				<text class="price">您需要先注册</text>
 				<text class="coupon">
@@ -247,14 +247,14 @@
 			<button type="primary" class="no-border confirm-btn" @click="navToLogin">去注册</button>
 		</view>
 		<!-- 底部菜单栏 -->
-		<view class="action-section"  v-if="!organization_info.has_organization_info" >
+		<view class="action-section"  v-if="!organization_info.has" >
 			<view class="total-box">
 				<text class="price">可以加入</text>
 				<text class="coupon">
 					多个公司或者组织
 				</text>
 			</view>
-			<button type="primary" class="no-border confirm-btn" @click="navToJoinOrganization">加入公司/组织</button>
+			<button type="primary" class="no-border confirm-btn"  @click="navToJoinOrganization">加入公司/组织</button>
 		</view>
 	</view>
 </template>
@@ -293,12 +293,11 @@
 								self.set_supplier_info(res.data.data.supplier_info)
 								self.set_supplier_department_info(res.data.data.supplier_department_info)
 								self.set_supplier_department_info_list(res.data.data.supplier_department_info_list)
+								self.set_organization_department_info_list(res.data.data.organization_department_info_list)
 								self.loadData();
 							}else{
 								self.$api.msg_fail(res.msg)
 							}
-						}).catch((err) =>{
-							console.log(err);
 						})
 					}
 				},
@@ -314,7 +313,22 @@
 				'set_supplier_info',
 				'set_supplier_department_info',
 				'set_supplier_department_info_list',
+				'set_organization_department_info_list',
 			]),
+			
+			/**
+			 * 统一跳转接口,拦截未登录路由
+			 * navigator标签现在默认没有转场动画，所以用view
+			 */
+			navTo(url) {
+				if (!this.user_info.has) {
+					url = '/pages/public/login';
+				}
+				uni.navigateTo({
+					url
+				})
+			},
+			
 			/**
 			 * 请求静态数据只是为了代码不那么乱
 			 * 分次请求未作整合

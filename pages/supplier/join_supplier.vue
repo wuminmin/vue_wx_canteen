@@ -2,22 +2,25 @@
 	<view class="container">
 		<view class="left-bottom-sign"></view>
 		<!-- <view class="right-top-sign"></view> -->
+		<view class="back-btn yticon icon-zuojiantou-up" @click="navBack"></view>
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
 			<view class="welcome">
 				根据组织名称或统代码查询！
 			</view>
 			<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
-			<block v-for="(item, index) in organization_apply_list" :key="index">
+			<block v-for="(item, index) in supplier_list" :key="index">
 				<uni-list>
-					<uni-list-item :show-arrow="false">统一代码：{{item.d.organization_main_id}}</uni-list-item>
-					<uni-list-item :show-arrow="false">姓名：{{item.d.apply_person_name}}</uni-list-item>
-					<uni-list-item :show-arrow="false">部门：{{item.d.apply_for_department.name}}</uni-list-item>
-					<uni-list-item :show-arrow="false">用工：{{item.d.apply_for_labor_contract.name}}</uni-list-item>
-					<button class="confirm-btn"  @click="toClick($event,item,'yes')">同意申请</button>
-				<button class="sms-btn"  @click="toClick($event,item,'no')">拒绝申请</button>
+					<uni-list-item :show-arrow="false">名称：{{item.d.supplier_name}}</uni-list-item>
+					<uni-list-item :show-arrow="false">统一代码：{{item.d.certificate_for_uniform_social_credit_code}}</uni-list-item>
+					<uni-list-item :show-arrow="false">地址：{{item.d.supplier_address}}</uni-list-item>
+					<button class="confirm-btn"  @click="handle_click(item)">申请加入</button>
 				</uni-list>
 			</block>
+		</view>
+		<view class="register-section">
+			还没有供应商?
+			<button class=".sms-btn" @click="navTo('/pages/supplier/create_supplier')">马上创建一个！</button>
 		</view>
 	</view>
 </template>
@@ -29,7 +32,6 @@
 	import uniNumberBox from '@/components/uni-number-box.vue'
 	import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
 	import uniSection from '@/components/uni-section/uni-section.vue'
-	import myRequest from '@/myTool.js'
 	export default {
 		components: {
 			uniList,
@@ -43,105 +45,47 @@
 				searchVal: '',
 				mobile: '',
 				password: '',
-				toJoinIng: false,
 				send_sms_ing: false,
-				organization_name: '',
-				organization_apply_list: [],
+				supplier_name: '',
+				supplier_list: [],
 			}
 		},
-		onLoad() {
-			let myUrl = 'wx_get_apply_for_join_organization'
-			let token = this.user_info.token
-			let sendData = {
-				apply_status: 'todo'
-			}
-			this.$api.myUniRequest({url: myUrl,data: {token: token,sendData: sendData}}).then(res => {
-				if (res.data.status == 1) {
-					this.organization_apply_list = res.data.data.organization_apply_list
-				} else {
-					this.$api.msg_fail(res.msg)
-				}
-			})
-			
-		},
+		onLoad() {},
 		computed: {
-			...mapState(['user_info', 'organization_info'])
+			...mapState(['user_info', 'supplier_info'])
 		},
 		methods: {
-			...mapMutations(['set_user_info', 'joinOrganization']),
+			...mapMutations(['set_user_info', 'set_supplier_info','set_join_supplier']),
 			
-			toClick:function (e,item,param) {
-				console.log(item)
-				let myUrl = 'wx_appral_apply_for_join_organization'
-				let token = this.user_info.token
-				let sendData = {apply:item,param:param}
-				myRequest({
-					url:myUrl,data:{token:token,sendData:sendData}
-				}).then(res => {
-					if(res.data.status == 1){
-						uni.navigateBack();
-					}else{
-						this.$api.msg_fail(res.msg)
-					}
+			/**
+			 * 统一跳转接口,拦截未登录路由
+			 * navigator标签现在默认没有转场动画，所以用view
+			 */
+			navTo(url) {
+				if (!this.user_info.has) {
+					url = '/pages/public/login';
+				}
+				uni.navigateTo({
+					url
 				})
 			},
 			
+			handle_click(item){
+				this.set_join_supplier(item)
+				this.navTo('')
+			},
+			
 			search(res) {
-				uni.showToast({
-					title: '搜索：' + res.value,
-					icon: 'none'
-				})
-				let self = this;
-				let sendData = {
-					apply_status: 'todo'
-				}
-				uni.request({
-					url: self.$global_dict.wx_url + 'wx_get_apply_for_join_organization',
-					data: {
-						token: self.$store.state.user_info.token,
-						sendData: sendData,
-					},
-					header: {
-						'custom-header': 'hello' //自定义请求头信息
-					},
-					success: (res) => {
-						console.log(res);
-						if (res.data.status == 2) {
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'fail',
-								mask: true,
-								duration: 2000
-							});
-						} else if (res.data.status == 1) {
-							self.organization_apply_list = res.data.data.organization_apply_list
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'success',
-								mask: true,
-								duration: 2000
-							});
-						} else {
-							console.log(res);
-							uni.showToast({
-								title: res.data.msg,
-								icon: 'fail',
-								mask: true,
-								duration: 2000
-							});
-						}
-						setTimeout(() => {
-							self.send_sms_ing = false;
-						}, 15000);
-					},
-					fail: (err) => {
-						console.log('request fail', err);
-						uni.showModal({
-							content: err.errMsg,
-							showCancel: false
-						});
+				let myUrl = 'wx_search_supplier'
+				let token = this.user_info.token
+				let sendData = {searchVal: res.value }
+				this.$api.myUniRequest({
+					url:myUrl,data:{token:token,sendData:sendData}
+				}).then(res => {
+					if(res.data.status == 1){
+						this.supplier_list = res.data.data.supplier_list
 					}
-				});
+				})
 
 			},
 			input(res) {
@@ -153,16 +97,9 @@
 					icon: 'none'
 				})
 			},
-
-			// inputChange(e) {
-			// 	const key = e.currentTarget.dataset.key;
-			// 	this[key] = e.detail.value;
-			// },
-			// navBack() {
-			// 	uni.navigateBack();
-			// },
-			
-		
+			navBack() {
+				uni.navigateBack();
+			},
 		},
 	}
 </script>

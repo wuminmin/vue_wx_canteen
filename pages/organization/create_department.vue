@@ -6,51 +6,33 @@
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
 			<view class="welcome">
-				创建组织！
+				创建部门！
 			</view>
 			<view class="input-content">
-				统一代码：
+				部门名称：
 				<view class="input-item">
-					<input v-model="certificate_for_uniform_social_credit_code"/>
+					<input v-model="organization_department_name"/>
 				</view>
 			</view>
 			<view class="input-content">
-				组织名称：
+				部门地址：
 				<view class="input-item">
-					<input v-model="organization_name"/>
-				</view>
-			</view>
-			<view class="input-content">
-				地址：
-				<view class="input-item">
-					<input v-model="organization_address"/>
-				</view>
-			</view>
-			<view class="input-content">
-				法人姓名：
-				<view class="input-item">
-					<input v-model="legal_person_name"/>
-				</view>
-			</view>
-			<view class="input-content">
-				法人手机：
-				<view class="input-item">
-					<input v-model="legal_person_mobile"/>
+					<input v-model="organization_department_address"/>
 				</view>
 			</view>
 			<view class="input-content">
 				管理员姓名：
 				<view class="input-item">
-					<input v-model="manage_person_name"/>
+					<input v-model="organization_department_manage_person_name"/>
 				</view>
 			</view>
 			<view class="input-content">
 				管理员手机：
 				<view class="input-item">
-					<input v-model="manage_person_mobile"/>
+					<input v-model="organization_department_manage_person_mobile"/>
 				</view>
 			</view>
-			<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">创建组织</button>
+			<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">创建</button>
 		</view>
 	</view>
 </template>
@@ -64,41 +46,35 @@
 	export default {
 		data() {
 			return {
-				organization_main_id:'',
-				certificate_for_uniform_social_credit_code:'',
-				organization_name:'',
-				organization_address:'',
-				legal_person_name:'',
-				legal_person_mobile:'',
-				manage_person_name:'',
-				manage_person_mobile:'',
+				organization_department_name:'',
+				organization_department_address:'',
+				organization_department_manage_person_name:'',
+				organization_department_manage_person_mobile:'',
 			}
 		},
 		onLoad() {
 		},
 		computed: {
-			...mapState(['hasLogin', 'hasOrganization', 'user_info', 'organization_info'])
+			...mapState(['hasLogin', 'user_info','organization_info'])
 		},
 		methods: {
-			...mapMutations(['set_user_info', 'joinOrganization','set_organization_info']),
+			...mapMutations(['set_user_info','set_organization_department_info_list']),
 			toJoin:function (){
-				let myUrl = 'wx_create_organization'
-				let token = this.user_info.token
 				let sendData = {
-					organization_main_id:this.organization_main_id,
-					certificate_for_uniform_social_credit_code:this.certificate_for_uniform_social_credit_code,
-					organization_name:this.organization_name,
-					organization_address:this.organization_address,
-					legal_person_name:this.legal_person_name,
-					legal_person_mobile:this.legal_person_mobile,
-					manage_person_name:this.manage_person_name,
-					manage_person_mobile:this.manage_person_mobile,
+					organization_main_id:this.organization_info.organization_main_id,
+					organization_department_name:this.organization_department_name,
+					organization_department_address:this.organization_department_address,
+					organization_department_manage_person_name:this.organization_department_manage_person_name,
+					organization_department_manage_person_mobile:this.organization_department_manage_person_mobile,
 				}
-				this.$api.myUniRequest({
-					url:myUrl,data:{token:token,sendData:sendData}
-				}).then(res => {
-					if(res.data.status == 1){
-						this.set_organization_info(res.data.data.organization_info)
+				let myUrl = 'wx_create_organization_department'
+				let token = this.user_info.token
+				this.$api.myUniRequest({url:myUrl,data:{token:token,sendData:sendData}}).then(res => {
+					if (res.data.status == 1) {
+						this.set_organization_department_info_list(res.data.data.organization_department_info_list)
+						this.$api.msg_success(res.msg)
+					} else {
+						this.$api.msg_fail(res.msg)
 					}
 				})
 			},

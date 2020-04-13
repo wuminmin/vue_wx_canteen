@@ -222,6 +222,16 @@
 			}
 		},
 		{
+			"path":"pages/organization/join_organization",
+			"style":{
+				"navigationBarTitleText": "加入组织",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		
+		{
 			"path":"pages/organization/switchOrganization",
 			"style":{
 				"navigationBarTitleText": "切换单位",
@@ -240,7 +250,25 @@
 			}
 		},
 		{
-			"path":"pages/supplier/createSupplier",
+			"path":"pages/organization/manage_department",
+			"style":{
+				"navigationBarTitleText": "管理部门",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path":"pages/organization/create_department",
+			"style":{
+				"navigationBarTitleText": "创建部门",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path":"pages/supplier/create_supplier",
 			"style":{
 				"navigationBarTitleText": "创建供应商",
 				"app-plus": {
@@ -249,9 +277,27 @@
 			}
 		},
 		{
-			"path":"pages/supplier/switchSupplier",
+			"path":"pages/supplier/switch_supplier",
 			"style":{
 				"navigationBarTitleText": "切换供应商",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path":"pages/supplier/join_supplier",
+			"style":{
+				"navigationBarTitleText": "加入供应商",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path":"pages/supplier/commit_apply_for_supplier",
+			"style":{
+				"navigationBarTitleText": "提交申请",
 				"app-plus": {
 					"bounce": "none"
 				}
@@ -269,7 +315,7 @@
 		{
 			"path":"pages/supplier/create_department",
 			"style":{
-				"navigationBarTitleText": "创建商店",
+				"navigationBarTitleText": "创建部门",
 				"app-plus": {
 					"bounce": "none"
 				}

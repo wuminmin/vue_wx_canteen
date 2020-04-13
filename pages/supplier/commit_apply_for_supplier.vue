@@ -6,51 +6,35 @@
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
 			<view class="welcome">
-				创建组织！
+				申请加入！
 			</view>
 			<view class="input-content">
-				统一代码：
-				<view class="input-item">
-					<input v-model="certificate_for_uniform_social_credit_code"/>
-				</view>
+				{{organizationInfo.d.organization_name}}
 			</view>
 			<view class="input-content">
-				组织名称：
+				姓名：
 				<view class="input-item">
-					<input v-model="organization_name"/>
+					<input v-model="name"/>
 				</view>
 			</view>
+			
 			<view class="input-content">
-				地址：
-				<view class="input-item">
-					<input v-model="organization_address"/>
-				</view>
+				部门：
+				<picker @change="bindPickerChange_department" :value="index_department" :range="department" range-key="name">
+					<view class="input-item">{{department[index_department].name}}</view>
+				</picker>
 			</view>
+			
 			<view class="input-content">
-				法人姓名：
-				<view class="input-item">
-					<input v-model="legal_person_name"/>
-				</view>
+				用工：
+				<picker @change="bindPickerChange_labor_contract" :value="index_labor_contract" :range="labor_contract" range-key="name">
+					<view class="input-item">{{labor_contract[index_labor_contract].name}}</view>
+				</picker>
 			</view>
-			<view class="input-content">
-				法人手机：
-				<view class="input-item">
-					<input v-model="legal_person_mobile"/>
-				</view>
-			</view>
-			<view class="input-content">
-				管理员姓名：
-				<view class="input-item">
-					<input v-model="manage_person_name"/>
-				</view>
-			</view>
-			<view class="input-content">
-				管理员手机：
-				<view class="input-item">
-					<input v-model="manage_person_mobile"/>
-				</view>
-			</view>
-			<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">创建组织</button>
+			
+			<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">申请加入</button>
+			
+			
 		</view>
 	</view>
 </template>
@@ -64,41 +48,73 @@
 	export default {
 		data() {
 			return {
-				organization_main_id:'',
-				certificate_for_uniform_social_credit_code:'',
-				organization_name:'',
-				organization_address:'',
-				legal_person_name:'',
-				legal_person_mobile:'',
-				manage_person_name:'',
-				manage_person_mobile:'',
+				name:'',
+				organizationInfoD:{},
+				index_department: 0,
+				index_labor_contract:0,
+				mobile: '',
+				password: '',
+				logining: false,
+				send_sms_ing: false,
+				my_organizationInfo: {},
+				department: [],
+				labor_contract: [],
 			}
 		},
 		onLoad() {
+			console.log(this.organizationInfo)
+			this.organizationInfoD = this.organizationInfo.d
+			this.my_organizationInfo = this.organizationInfo
+			this.department = this.organizationInfo.d.department
+			this.labor_contract = this.organizationInfo.d.labor_contract
 		},
 		computed: {
 			...mapState(['hasLogin', 'hasOrganization', 'user_info', 'organization_info'])
 		},
 		methods: {
-			...mapMutations(['set_user_info', 'joinOrganization','set_organization_info']),
+			...mapMutations(['set_user_info', 'joinOrganization']),
+			bindPickerChange_department: function(e) {
+				console.log('picker发送选择改变，携带值为：' + e.detail.value)
+				this.index_department = e.detail.value
+			},
+			bindPickerChange_labor_contract: function(e) {
+				console.log('picker发送选择改变，携带值为：' + e.detail.value)
+				this.index_labor_contract = e.detail.value
+			},
 			toJoin:function (){
-				let myUrl = 'wx_create_organization'
-				let token = this.user_info.token
+				let self = this
 				let sendData = {
-					organization_main_id:this.organization_main_id,
-					certificate_for_uniform_social_credit_code:this.certificate_for_uniform_social_credit_code,
-					organization_name:this.organization_name,
-					organization_address:this.organization_address,
-					legal_person_name:this.legal_person_name,
-					legal_person_mobile:this.legal_person_mobile,
-					manage_person_name:this.manage_person_name,
-					manage_person_mobile:this.manage_person_mobile,
+					organization_main_id:self.my_organizationInfo.d.organization_main_id,
+					name:self.name,
+					department:self.department[self.index_department],
+					labor_contract:self.labor_contract[self.index_labor_contract]
 				}
-				this.$api.myUniRequest({
-					url:myUrl,data:{token:token,sendData:sendData}
-				}).then(res => {
-					if(res.data.status == 1){
-						this.set_organization_info(res.data.data.organization_info)
+				uni.request({
+					url:self.$global_dict.wx_url+'wx_joinDepartment',
+					data:{
+						token : self.$store.state.user_info.token ,
+						sendData : sendData
+					},
+					success:function(res){
+						console.log(res)
+						if(res.status == 1){
+							uni.showToast({
+								title: res.data.msg,
+								icon: 'success',
+								mask: true,
+								duration: 3000
+							});
+						}else{
+							uni.showToast({
+								title: res.data.msg,
+								icon: 'fail',
+								mask: true,
+								duration: 3000
+							});
+						}
+					},
+					fail: (err) => {
+						console.log(err)
 					}
 				})
 			},

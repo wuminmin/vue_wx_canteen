@@ -10,10 +10,10 @@
 			<uni-search-bar @confirm="search" @input="input" @cancel="cancel" />
 			<block v-for="(item, index) in organization_list" :key="index">
 				<uni-list>
-					<uni-list-item :show-arrow="false">{{item.d.organization_name}}</uni-list-item>
-					<uni-list-item :show-arrow="false">统一代码：{{item.d.organization_main_id}}</uni-list-item>
+					<uni-list-item :show-arrow="false">名称：{{item.d.organization_name}}</uni-list-item>
+					<uni-list-item :show-arrow="false">统一代码：{{item.d.certificate_for_uniform_social_credit_code}}</uni-list-item>
 					<uni-list-item :show-arrow="false">地址：{{item.d.organization_address}}</uni-list-item>
-					<button class="confirm-btn" :disabled="toJoinIng" @click="toJoin(item)">切换单位</button>
+					<button class="confirm-btn" @click="toJoin(item)">切换单位</button>
 				</uni-list>
 			</block>
 		</view>
@@ -52,7 +52,7 @@
 			...mapState(['hasLogin', 'hasOrganization', 'user_info', 'organization_info'])
 		},
 		methods: {
-			...mapMutations(['set_user_info', 'joinOrganization']),
+			...mapMutations(['set_user_info', 'joinOrganization','set_organization_info']),
 			
 			toJoin:function (item) {
 				console.log(item)
@@ -63,10 +63,8 @@
 					url:myUrl,data:{token:token,sendData:sendData}
 				}).then(res => {
 					if(res.data.status == 1){
-						this.login(res.data.data.user_info)
+						this.set_organization_info(res.data.data.organization_info)
 						uni.navigateBack();
-					}else{
-						this.$api.msg_fail(res.msg)
 					}
 				})
 			},
@@ -79,8 +77,6 @@
 				}).then(res => {
 					if(res.data.status == 1){
 						this.organization_list = res.data.data.organization_list
-					}else{
-						this.$api.msg_fail(res.msg)
 					}
 				})
 			},

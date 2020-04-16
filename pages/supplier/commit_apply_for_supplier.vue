@@ -1,7 +1,7 @@
 <template>
 	<view class="container">
 		<view class="left-bottom-sign"></view>
-		<view class="back-btn yticon icon-zuojiantou-up" @click="navBack"></view>
+		<!-- <view class="back-btn yticon icon-zuojiantou-up" @click="navBack"></view> -->
 		<view class="right-top-sign"></view>
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
@@ -69,10 +69,10 @@
 			this.labor_contract = this.organizationInfo.d.labor_contract
 		},
 		computed: {
-			...mapState(['hasLogin', 'hasOrganization', 'user_info', 'organization_info'])
+			...mapState(['user_info', 'organization_info'])
 		},
 		methods: {
-			...mapMutations(['set_user_info', 'joinOrganization']),
+			...mapMutations(['set_user_info']),
 			bindPickerChange_department: function(e) {
 				console.log('picker发送选择改变，携带值为：' + e.detail.value)
 				this.index_department = e.detail.value

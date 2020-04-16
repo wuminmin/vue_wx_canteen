@@ -15,9 +15,6 @@ const store = new Vuex.Store({
 			has:false
 		},
 		organization_department_info_list:[],
-		goods_info:{
-			has:false
-		},
 		supplier_info:{
 			has:false
 		},
@@ -50,9 +47,8 @@ const store = new Vuex.Store({
 			    data: provider  
 			}) 
 			console.log(state.organization_info,'------------store-mutations-set_organization_info');
-			
 		},
-		set_organization_department_info(){
+		set_organization_department_info(state,provider){
 			state.organization_department_info = provider;
 			uni.setStorage({
 			    key: 'organization_department_info',  

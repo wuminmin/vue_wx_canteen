@@ -58,7 +58,7 @@
         "usingComponents" : true,
         "appid" : "wx2203267d98fed645",
         "setting" : {
-            "urlCheck" : true
+            "urlCheck" : false
         }
     }
 }

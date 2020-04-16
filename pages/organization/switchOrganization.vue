@@ -52,7 +52,8 @@
 			...mapState(['hasLogin', 'hasOrganization', 'user_info', 'organization_info'])
 		},
 		methods: {
-			...mapMutations(['set_user_info', 'joinOrganization','set_organization_info']),
+			...mapMutations(['set_user_info', 'joinOrganization','set_organization_info',
+			'set_organization_department_info_list']),
 			
 			toJoin:function (item) {
 				console.log(item)
@@ -64,6 +65,7 @@
 				}).then(res => {
 					if(res.data.status == 1){
 						this.set_organization_info(res.data.data.organization_info)
+						this.set_organization_department_info_list(res.data.data.organization_department_info_list)
 						uni.navigateBack();
 					}
 				})

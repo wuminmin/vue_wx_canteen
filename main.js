@@ -10,6 +10,10 @@ import Json from './Json' //测试用数据
  *  css部分使用了App.vue下的全局样式和iconfont图标，有需要图标库的可以留言。
  *  示例使用了uni.scss下的变量, 除变量外已尽量移除特有语法,可直接替换为其他预处理器使用
  */
+const app_id = 'wx2203267d98fed645'
+
+const wx_url = 'https://wx.wuminmin.top/canteen_alliance/'
+
 const msg = (title, duration = 1500, mask = false, icon = 'none') => {
 	//统一提示方便全局修改
 	if (Boolean(title) === false) {
@@ -79,7 +83,8 @@ const myUniRequest = (options) => {
 	console.log(options, '--------------myUniRequest 入参')
 	return new Promise((resolve, reject) => {
 		uni.request({
-			url: 'https://wx.wuminmin.top/canteen_alliance/' + url,
+			// url: 'https://wx.wuminmin.top/canteen_alliance/' + url,
+			url: 'http://127.0.0.1:80/canteen_alliance/' + url,
 			data: data || {},
 			method: method || 'GET',
 			header: header || {},
@@ -98,7 +103,7 @@ const myUniRequest = (options) => {
 						title: res.data.msg,
 						icon: 'none',
 						mask: true,
-						duration: 3000
+						duration: 2000
 					});
 				}
 				resolve(res)
@@ -109,7 +114,7 @@ const myUniRequest = (options) => {
 					title: '未知故障',
 					icon: 'none',
 					mask: true,
-					duration: 3000
+					duration: 2000
 				});
 				reject(err)
 			},
@@ -120,6 +125,43 @@ const myUniRequest = (options) => {
 	})
 }
 
+// const my_login = (options) => {
+// 	const self = this;
+// 	uni.login({
+// 		success: function(res) {
+// 			if (res.code) {
+// 				let myUrl = 'wx_login'
+// 				let token = ''
+// 				// let app_id = self.$global_dict.app_id
+// 				let code = res.code
+// 				const sendData = {
+// 					app_id,
+// 					code
+// 				}
+// 				myUniRequest({
+// 					url: myUrl,
+// 					data: {
+// 						token: token,
+// 						sendData: sendData
+// 					}
+// 				}).then(res => {
+// 					if (res.data.status == 1) {
+// 						self.set_user_info(res.data.data.user_info)
+// 						self.set_organization_info(res.data.data.organization_info)
+// 						self.set_supplier_info(res.data.data.supplier_info)
+// 						self.set_supplier_department_info(res.data.data.supplier_department_info)
+// 						self.set_supplier_department_info_list(res.data.data.supplier_department_info_list)
+// 						self.set_organization_department_info_list(res.data.data.organization_department_info_list)
+// 						self.loadData();
+// 					} else {
+// 						self.$api.msg_fail(res.msg)
+// 					}
+// 				})
+// 			}
+// 		},
+// 	})
+// }
+
 
 /**
  * 统一跳转接口,拦截未登录路由
@@ -128,8 +170,8 @@ const myUniRequest = (options) => {
 
 Vue.config.productionTip = false
 Vue.prototype.$global_dict = {
-	app_id: 'wx2203267d98fed645',
-	wx_url: 'https://wx.wuminmin.top/canteen_alliance/'
+	app_id: app_id,
+	wx_url: wx_url
 }
 Vue.prototype.$fire = new Vue();
 Vue.prototype.$store = store;
@@ -139,7 +181,8 @@ Vue.prototype.$api = {
 	msg_fail,
 	json,
 	prePage,
-	myUniRequest
+	myUniRequest,
+	// my_login
 };
 
 App.mpType = 'app'

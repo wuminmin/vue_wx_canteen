@@ -79,39 +79,6 @@
 			}
 		}, 
 		{
-			"path": "pages/public/joinOrganization",
-			"style": {
-				"navigationBarTitleText": "加入组织",
-				"navigationStyle": "custom",
-				"app-plus": {
-					"titleNView": false,
-					"animationType": "slide-in-bottom"
-				}
-			}
-		}, 
-		{
-			"path": "pages/public/joinDepartment",
-			"style": {
-				"navigationBarTitleText": "",
-				"navigationStyle": "custom",
-				"app-plus": {
-					"titleNView": false,
-					"animationType": "slide-in-bottom"
-				}
-			}
-		}, 
-		{
-			"path": "pages/public/createOrganization",
-			"style": {
-				"navigationBarTitleText": "",
-				"navigationStyle": "custom",
-				"app-plus": {
-					"titleNView": false,
-					"animationType": "slide-in-bottom"
-				}
-			}
-		}, 
-		{
 			"path": "pages/user/user",
 			"style": {
 				"navigationBarTitleText": "我的",
@@ -222,6 +189,15 @@
 			}
 		},
 		{
+			"path":"pages/organization/commit_apply_for_organization",
+			"style":{
+				"navigationBarTitleText": "提交申请",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
 			"path":"pages/organization/join_organization",
 			"style":{
 				"navigationBarTitleText": "加入组织",
@@ -267,6 +243,15 @@
 				}
 			}
 		},
+		{
+			"path": "pages/organization/create_organization",
+			"style":{
+				"navigationBarTitleText": "创建组织",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		}, 
 		{
 			"path":"pages/supplier/create_supplier",
 			"style":{

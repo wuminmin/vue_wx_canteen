@@ -244,17 +244,17 @@
 					才可以使用完整的功能
 				</text>
 			</view>
-			<button type="primary" class="no-border confirm-btn" @click="navToLogin">去注册</button>
+			<button type="primary" class="no-border confirm-btn" @click="navTo('/pages/public/login')">去注册</button>
 		</view>
 		<!-- 底部菜单栏 -->
-		<view class="action-section"  v-if="!organization_info.has" >
+		<view class="action-section"  v-if="!organization_info.has && user_info.has" >
 			<view class="total-box">
 				<text class="price">可以加入</text>
 				<text class="coupon">
 					多个公司或者组织
 				</text>
 			</view>
-			<button type="primary" class="no-border confirm-btn"  @click="navToJoinOrganization">加入公司/组织</button>
+			<button type="primary" class="no-border confirm-btn"  @click="navTo('/pages/organization/create_organization')">加入公司/组织</button>
 		</view>
 	</view>
 </template>
@@ -290,10 +290,11 @@
 							if(res.data.status == 1){
 								self.set_user_info(res.data.data.user_info)
 								self.set_organization_info(res.data.data.organization_info)
+								self.set_organization_department_info(res.data.data.organization_department_info)
+								self.set_organization_department_info_list(res.data.data.organization_department_info_list)
 								self.set_supplier_info(res.data.data.supplier_info)
 								self.set_supplier_department_info(res.data.data.supplier_department_info)
 								self.set_supplier_department_info_list(res.data.data.supplier_department_info_list)
-								self.set_organization_department_info_list(res.data.data.organization_department_info_list)
 								self.loadData();
 							}else{
 								self.$api.msg_fail(res.msg)
@@ -310,10 +311,11 @@
 			...mapMutations([
 				'set_user_info',
 				'set_organization_info',
+				'set_organization_department_info',
+				'set_organization_department_info_list',
 				'set_supplier_info',
 				'set_supplier_department_info',
 				'set_supplier_department_info_list',
-				'set_organization_department_info_list',
 			]),
 			
 			/**

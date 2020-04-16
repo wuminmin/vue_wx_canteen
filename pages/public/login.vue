@@ -5,9 +5,9 @@
 		<view class="right-top-sign"></view>
 		<!-- 设置白色背景防止软键盘把下部绝对定位元素顶上来盖住输入框等 -->
 		<view class="wrapper">
-			<view class="left-top-sign">注册！</view>
+			<view class="left-top-sign">登陆/注册！</view>
 			<view class="welcome">
-				欢迎注册！
+				通过短信验证码登陆或注册！
 			</view>
 			<view class="input-content">
 				<view class="input-item">
@@ -25,7 +25,7 @@
 				</view>
 			</view>
 			<button class="sms-btn" @click="send_sms" :disabled="send_sms_ing">发送验证码</button>
-			<button class="confirm-btn" @click="toLogin" >注册</button>
+			<button class="confirm-btn" @click="toLogin" >登陆/注册</button>
 		</view>
 		<!-- <view class="register-section">
 			还没有账号?
@@ -107,7 +107,7 @@
 								url:myUrl,data:{token:token,sendData:sendData}
 							}).then(res => {
 								if(res.data.status == 1){
-									self.login(res.data.data);
+									self.set_user_info(res.data.data.user_info);
 									uni.navigateBack();
 								}
 							})
